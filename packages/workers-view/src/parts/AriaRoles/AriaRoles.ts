@@ -1,0 +1,5 @@
+export const Cell = 'cell'
+export const ColumnHeader = 'columnheader'
+export const Row = 'row'
+export const Status = 'status'
+export const Table = 'table'
