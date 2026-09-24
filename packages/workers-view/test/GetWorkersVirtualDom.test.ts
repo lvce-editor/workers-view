@@ -38,3 +38,14 @@ test('does not show an empty state while loading or when a worker is present', (
   expect(getWorkersVirtualDom([], false, PlatformType.Web).some((node) => node.text === 'No workers are running.')).toBe(false)
   expect(getWorkersVirtualDom([worker], true, PlatformType.Electron).some((node) => node.text === 'No workers are running.')).toBe(false)
 })
+
+test('uses the existing English strings by default', () => {
+  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
+  expect(nodes.some((node) => node.text === 'Workers')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Refresh')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Name')).toBe(true)
+  expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
+  expect(nodes[3]?.ariaLabel).toBe('Workers')
+  expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.text === 'No workers are running.')).toBe(true)
+})
