@@ -28,9 +28,7 @@ const occurrence = `// const workersViewWorkerUrl = \`\${assetDir}/packages/work
 const workersViewWorkerUrl = \`${remoteUrl}\``
 const replacement = `const workersViewWorkerUrl = \`\${assetDir}/packages/workers-view/dist/workersViewMain.js\``
 
-if (!content.includes(occurrence)) {
-  throw new Error('occurrence not found')
+if (content.includes(occurrence)) {
+  await writeFile(rendererWorkerPath, content.replace(occurrence, replacement))
 }
-
-await writeFile(rendererWorkerPath, content.replace(occurrence, replacement))
 await cp(join(root, 'dist'), join(root, '.tmp', 'static'), { recursive: true })
