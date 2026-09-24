@@ -1,5 +1,6 @@
 import { PlatformType } from '@lvce-editor/constants'
 import type { DisplayedWorker, TrackedWorker, WorkersState } from '../WorkersState/WorkersState.ts'
+import * as ToError from '../ToError/ToError.ts'
 
 export interface RefreshServices {
   readonly getMemoryUsage: (runtimeName: string) => Promise<{ readonly usedSize: number } | null>
@@ -8,7 +9,12 @@ export interface RefreshServices {
 
 export const refresh = async (state: WorkersState, services: RefreshServices): Promise<WorkersState> => {
   const { platform } = state
-  const workers = await services.getWorkers()
+  let workers: readonly TrackedWorker[]
+  try {
+    workers = await services.getWorkers()
+  } catch (error) {
+    return { ...state, error: ToError.toError(error), loaded: true }
+  }
   let displayedWorkers: readonly DisplayedWorker[] = workers.map((worker) => ({ ...worker, memory: null }))
   if (platform === PlatformType.Electron) {
     const measuredWorkers: DisplayedWorker[] = []
@@ -26,5 +32,5 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
     }
     displayedWorkers = measuredWorkers
   }
-  return { ...state, loaded: true, workers: displayedWorkers }
+  return { ...state, error: undefined, loaded: true, workers: displayedWorkers }
 }

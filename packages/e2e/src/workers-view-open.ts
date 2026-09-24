@@ -13,5 +13,7 @@ export const test: Test = async ({ Command, expect, Locator }) => {
   await expect(view.locator('h1')).toHaveText('Workers')
   await expect(view.locator('[role="table"][aria-label="Workers"]')).toBeVisible()
   await expect(view.locator('button')).toHaveText('Refresh')
+  await Command.execute('Workers.setError', new Error('Workers view e2e error'))
+  await expect(view.locator('[role="alert"]')).toHaveText('Workers view e2e error')
   await Command.execute('Developer.refreshWorkersView')
 }

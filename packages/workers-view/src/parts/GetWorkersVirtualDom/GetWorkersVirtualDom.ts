@@ -19,6 +19,8 @@ const refreshButton = {
   text: 'Refresh',
   type: VirtualDomElements.Button,
 }
+const getError = (error: Error | undefined): readonly VirtualDomNode[] =>
+  error ? [{ className: 'workers-view-error', role: AriaRoles.Alert, text: error.message, type: VirtualDomElements.P }] : []
 
 const getMemoryText = (memory: number | null): string => (memory === null ? 'Unavailable' : FormatMemory.formatMemory(memory))
 
@@ -38,7 +40,12 @@ const getEmptyState = (workers: readonly DisplayedWorker[], loaded: boolean): re
   return [{ className: 'workers-view-empty-state', role: AriaRoles.Status, text: 'No workers are running.', type: VirtualDomElements.P }]
 }
 
-export const getWorkersVirtualDom = (workers: readonly DisplayedWorker[], loaded: boolean, platform: number): readonly VirtualDomNode[] => {
+export const getWorkersVirtualDom = (
+  workers: readonly DisplayedWorker[],
+  loaded: boolean,
+  platform: number,
+  error: Error | undefined,
+): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
   const columns = showMemory ? headerCells : headerCells.slice(0, 1)
   const rows = workers.flatMap((worker) => getWorkerRow(worker, showMemory))
@@ -49,6 +56,15 @@ export const getWorkersVirtualDom = (workers: readonly DisplayedWorker[], loaded
     role: AriaRoles.Table,
     type: VirtualDomElements.Table,
   }
-  const children = [title, refreshButton, table, { ...headerRow, childCount: columns.length }, ...columns, ...rows, ...getEmptyState(workers, loaded)]
+  const children = [
+    title,
+    refreshButton,
+    ...getError(error),
+    table,
+    { ...headerRow, childCount: columns.length },
+    ...columns,
+    ...rows,
+    ...getEmptyState(workers, loaded),
+  ]
   return [{ childCount: children.length, className: 'workers-view', type: VirtualDomElements.Div }, ...children]
 }
