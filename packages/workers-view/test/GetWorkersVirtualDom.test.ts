@@ -38,3 +38,33 @@ test('does not show an empty state while loading or when a worker is present', (
   expect(getWorkersVirtualDom([], false, PlatformType.Web).some((node) => node.text === 'No workers are running.')).toBe(false)
   expect(getWorkersVirtualDom([worker], true, PlatformType.Electron).some((node) => node.text === 'No workers are running.')).toBe(false)
 })
+
+test('uses the existing English strings by default', () => {
+  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
+  expect(nodes.some((node) => node.text === 'Workers')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Refresh')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Name')).toBe(true)
+  expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
+  expect(nodes[3]?.ariaLabel).toBe('Workers')
+  expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.text === 'No workers are running.')).toBe(true)
+})
+
+test('uses substituted strings in labels, empty state, and the table accessible name', () => {
+  const strings = {
+    javaScriptHeapUsed: (): string => 'translated heap',
+    name: (): string => 'translated name',
+    noWorkersAreRunning: (): string => 'translated empty state',
+    refresh: (): string => 'translated refresh',
+    unavailable: (): string => 'translated unavailable',
+    workers: (): string => 'translated workers',
+  }
+  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron, strings)
+  expect(nodes.some((node) => node.text === 'translated workers')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated refresh')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated name')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated heap')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated unavailable')).toBe(true)
+  expect(nodes[3]?.ariaLabel).toBe('translated workers')
+  expect(getWorkersVirtualDom([], true, PlatformType.Web, strings).some((node) => node.text === 'translated empty state')).toBe(true)
+})
