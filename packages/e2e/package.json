@@ -1,0 +1,21 @@
+{
+  "name": "e2e",
+  "version": "0.0.0-dev",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "e2e": "test-with-playwright --only-extension=. --test-path=. --reuse-page",
+    "e2e:firefox": "npm run patch:playwright-firefox-worker-websocket && test-with-playwright --only-extension=. --test-path=. --browser=firefox --reuse-page",
+    "e2e:firefox:headless": "npm run patch:playwright-firefox-worker-websocket && test-with-playwright --only-extension=. --test-path=. --browser=firefox --headless --reuse-page",
+    "e2e:headless": "test-with-playwright --only-extension=. --test-path=. --headless --reuse-page",
+    "e2e:webkit": "test-with-playwright --only-extension=. --test-path=. --browser=webkit --reuse-page",
+    "e2e:webkit:headless": "test-with-playwright --only-extension=. --test-path=. --browser=webkit --headless --reuse-page",
+    "patch:playwright-firefox-worker-websocket": "node ./scripts/patch-playwright-firefox-worker-websocket.js",
+    "type-check": "tsc"
+  },
+  "devDependencies": {
+    "@lvce-editor/test-with-playwright": "^22.36.3",
+    "@types/node": "^26.0.1"
+  }
+}
