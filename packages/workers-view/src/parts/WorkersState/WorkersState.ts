@@ -9,6 +9,7 @@ export interface DisplayedWorker extends TrackedWorker {
 }
 
 export interface WorkersState {
+  readonly error: Error | undefined
   readonly height: number
   readonly loaded: boolean
   readonly platform: number
