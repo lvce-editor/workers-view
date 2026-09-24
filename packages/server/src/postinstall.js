@@ -26,9 +26,7 @@ if (!content.includes('// const workersViewWorkerUrl = ')) {
 const workersViewWorkerUrl = \`${remoteUrl}\``
   const newContent = content.replace(occurrence, replacement)
 
-  if (newContent === content) {
-    throw new Error('replacement error')
+  if (newContent !== content) {
+    await writeFile(rendererWorkerMainPath, newContent)
   }
-
-  await writeFile(rendererWorkerMainPath, newContent)
 }
