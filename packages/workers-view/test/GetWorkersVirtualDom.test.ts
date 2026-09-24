@@ -22,6 +22,11 @@ test('shows a heap column in Electron and leaves missing measurements unavailabl
   expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
 })
 
+test('formats worker memory in Electron', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron)
+  expect(nodes.some((node) => node.text === '1.0 KiB')).toBe(true)
+})
+
 test('shows only worker names outside Electron', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Web)
   expect(nodes.some((node) => node.text === 'Editor Worker')).toBe(true)

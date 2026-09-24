@@ -3,32 +3,9 @@ import { VirtualDomElements, type VirtualDomNode } from '@lvce-editor/virtual-do
 import type { DisplayedWorker } from '../WorkersState/WorkersState.ts'
 import * as AriaRoles from '../AriaRoles/AriaRoles.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
-import * as FormatMemory from '../FormatMemory/FormatMemory.ts'
+import * as GetEmptyState from '../GetEmptyState/GetEmptyState.ts'
+import * as GetWorkerRow from '../GetWorkerRow/GetWorkerRow.ts'
 import * as WorkersViewStrings from '../WorkersViewStrings/WorkersViewStrings.ts'
-
-const getMemoryText = (memory: number | null, strings: typeof WorkersViewStrings): string =>
-  memory === null ? strings.unavailable() : FormatMemory.formatMemory(memory)
-
-const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, strings: typeof WorkersViewStrings): readonly VirtualDomNode[] => {
-  const cells: VirtualDomNode[] = [{ className: 'workers-view-worker-cell', role: AriaRoles.Cell, text: worker.name, type: VirtualDomElements.Td }]
-  if (showMemory) {
-    cells.push({
-      className: 'workers-view-worker-cell',
-      role: AriaRoles.Cell,
-      text: getMemoryText(worker.memory, strings),
-      type: VirtualDomElements.Td,
-    })
-  }
-  return [
-    { ariaLabel: worker.name, childCount: cells.length, className: 'workers-view-worker-row', role: AriaRoles.Row, type: VirtualDomElements.Tr },
-    ...cells,
-  ]
-}
-
-const getEmptyState = (workers: readonly DisplayedWorker[], loaded: boolean, strings: typeof WorkersViewStrings): readonly VirtualDomNode[] => {
-  if (workers.length > 0 || !loaded) return []
-  return [{ className: 'workers-view-empty-state', role: AriaRoles.Status, text: strings.noWorkersAreRunning(), type: VirtualDomElements.P }]
-}
 
 export const getWorkersVirtualDom = (
   workers: readonly DisplayedWorker[],
@@ -56,7 +33,7 @@ export const getWorkersVirtualDom = (
     type: VirtualDomElements.Button,
   }
   const columns = showMemory ? headerCells : headerCells.slice(0, 1)
-  const rows = workers.flatMap((worker) => getWorkerRow(worker, showMemory, strings))
+  const rows = workers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, strings))
   const table = {
     ariaLabel: strings.workers(),
     childCount: workers.length + 1,
@@ -71,7 +48,7 @@ export const getWorkersVirtualDom = (
     { ...headerRow, childCount: columns.length },
     ...columns,
     ...rows,
-    ...getEmptyState(workers, loaded, strings),
+    ...GetEmptyState.getEmptyState(workers, loaded, strings),
   ]
   return [{ childCount: children.length, className: 'workers-view', type: VirtualDomElements.Div }, ...children]
 }
