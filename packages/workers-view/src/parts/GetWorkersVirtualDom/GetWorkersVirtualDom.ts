@@ -27,7 +27,10 @@ const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean): readonly Vi
   if (showMemory) {
     cells.push({ className: 'workers-view-worker-cell', role: AriaRoles.Cell, text: getMemoryText(worker.memory), type: VirtualDomElements.Td })
   }
-  return [{ ariaLabel: worker.name, childCount: cells.length, className: 'workers-view-worker-row', role: AriaRoles.Row, type: VirtualDomElements.Tr }, ...cells]
+  return [
+    { ariaLabel: worker.name, childCount: cells.length, className: 'workers-view-worker-row', role: AriaRoles.Row, type: VirtualDomElements.Tr },
+    ...cells,
+  ]
 }
 
 const getEmptyState = (workers: readonly DisplayedWorker[], loaded: boolean): readonly VirtualDomNode[] => {
@@ -41,8 +44,8 @@ export const getWorkersVirtualDom = (workers: readonly DisplayedWorker[], loaded
   const rows = workers.flatMap((worker) => getWorkerRow(worker, showMemory))
   const table = {
     ariaLabel: 'Workers',
-    className: 'workers-view-table',
     childCount: workers.length + 1,
+    className: 'workers-view-table',
     role: AriaRoles.Table,
     type: VirtualDomElements.Table,
   }
