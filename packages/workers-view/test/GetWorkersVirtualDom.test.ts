@@ -4,6 +4,18 @@ import { getWorkersVirtualDom } from '../src/parts/GetWorkersVirtualDom/GetWorke
 
 const worker = { id: 'worker-1', memory: 1024, name: 'Editor Worker', runtimeName: 'Editor Worker [worker-1]' }
 
+const expectEveryElementToHaveClassName = (nodes: ReturnType<typeof getWorkersVirtualDom>): void => {
+  expect(nodes.every((node) => typeof node.className === 'string' && node.className.length > 0)).toBe(true)
+}
+
+test('gives every element a stable class in loading, populated, and empty states', () => {
+  expectEveryElementToHaveClassName(getWorkersVirtualDom([], false, PlatformType.Web))
+  expectEveryElementToHaveClassName(getWorkersVirtualDom([worker], true, PlatformType.Web))
+  expectEveryElementToHaveClassName(getWorkersVirtualDom([worker], true, PlatformType.Electron))
+  expectEveryElementToHaveClassName(getWorkersVirtualDom([], true, PlatformType.Web))
+  expectEveryElementToHaveClassName(getWorkersVirtualDom([], true, PlatformType.Electron))
+})
+
 test('shows a heap column in Electron and leaves missing measurements unavailable', () => {
   const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
   expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(true)
