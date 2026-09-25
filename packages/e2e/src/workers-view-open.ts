@@ -9,9 +9,12 @@ export const test: Test = async ({ Command, expect, Locator }) => {
   await Command.execute('Developer.openWorkersView')
 
   const view = Locator('.workers-view')
+  const heading = view.locator('h1')
+  const table = view.locator('[role="table"][aria-label="Workers"]')
+  const refreshButton = view.locator('button')
   await expect(view).toBeVisible()
-  await expect(view.locator('h1')).toHaveText('Workers')
-  await expect(view.locator('[role="table"][aria-label="Workers"]')).toBeVisible()
-  await expect(view.locator('button')).toHaveText('Refresh')
+  await expect(heading).toHaveText('Workers')
+  await expect(table).toBeVisible()
+  await expect(refreshButton).toHaveText('Refresh')
   await Command.execute('Developer.refreshWorkersView')
 }
