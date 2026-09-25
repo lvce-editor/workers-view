@@ -47,7 +47,7 @@
     "@lvce-editor/constants": "^5.20.0",
     "@lvce-editor/i18n": "^2.5.0",
     "@lvce-editor/rpc": "^6.8.0",
-    "@lvce-editor/rpc-registry": "^9.42.0",
+    "@lvce-editor/rpc-registry": "^9.65.2",
     "@lvce-editor/viewlet-registry": "^5.5.0",
     "@lvce-editor/virtual-dom-worker": "^11.8.1",
     "@types/node": "^22.20.1",
