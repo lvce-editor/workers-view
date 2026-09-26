@@ -26,13 +26,6 @@
     "test": "npm test --workspaces --if-present",
     "type-check": "tsc -b"
   },
-  "nodemonConfig": {
-    "watch": [
-      "src"
-    ],
-    "ext": "ts,js",
-    "exec": "node scripts/build.js"
-  },
   "prettier": {
     "semi": false,
     "singleQuote": true,
