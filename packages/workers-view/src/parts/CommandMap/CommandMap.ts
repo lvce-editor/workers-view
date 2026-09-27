@@ -1,3 +1,4 @@
+import * as AutoRefreshWorkers from '../AutoRefreshWorkers/AutoRefreshWorkers.ts'
 import * as Create from '../Create/Create.ts'
 import * as Diff2 from '../Diff2/Diff2.ts'
 import * as Dispose from '../Dispose/Dispose.ts'
@@ -14,6 +15,7 @@ const handleDirectMessagePort = (port: MessagePort, setAsRendererProcess?: boole
   HandleMessagePort.handleMessagePort(port, commandMap, setAsRendererProcess)
 
 export const commandMap = {
+  'Workers.autoRefresh': WorkersStates.wrapCommand(AutoRefreshWorkers.autoRefresh),
   'Workers.create': Create.create,
   'Workers.diff2': Diff2.diff2,
   'Workers.dispose': Dispose.dispose,

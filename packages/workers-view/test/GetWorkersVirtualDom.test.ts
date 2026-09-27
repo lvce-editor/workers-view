@@ -9,55 +9,55 @@ const everyElementHasClassName = (nodes: ReturnType<typeof getWorkersVirtualDom>
 }
 
 test('gives every element a stable class in loading, populated, and empty states', () => {
-  expect(everyElementHasClassName(getWorkersVirtualDom([], false, PlatformType.Web, undefined))).toBe(true)
-  expect(everyElementHasClassName(getWorkersVirtualDom([worker], true, PlatformType.Web, undefined))).toBe(true)
-  expect(everyElementHasClassName(getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined))).toBe(true)
-  expect(everyElementHasClassName(getWorkersVirtualDom([], true, PlatformType.Web, undefined))).toBe(true)
-  expect(everyElementHasClassName(getWorkersVirtualDom([], true, PlatformType.Electron, undefined))).toBe(true)
+  expect(everyElementHasClassName(getWorkersVirtualDom([], false, PlatformType.Web))).toBe(true)
+  expect(everyElementHasClassName(getWorkersVirtualDom([worker], true, PlatformType.Web))).toBe(true)
+  expect(everyElementHasClassName(getWorkersVirtualDom([worker], true, PlatformType.Electron))).toBe(true)
+  expect(everyElementHasClassName(getWorkersVirtualDom([], true, PlatformType.Web))).toBe(true)
+  expect(everyElementHasClassName(getWorkersVirtualDom([], true, PlatformType.Electron))).toBe(true)
 })
 
 test('shows a heap column in Electron and leaves missing measurements unavailable', () => {
-  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron, undefined)
-  expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(true)
-  expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
+  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
+  expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
 })
 
 test('formats worker memory in Electron', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron)
-  expect(nodes.some((node) => node.text === '1.0 KiB')).toBe(true)
+  expect(nodes.some((node) => node.textContent === '1.0 KiB')).toBe(true)
 })
 
 test('shows only worker names outside Electron', () => {
-  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Web, undefined)
-  expect(nodes.some((node) => node.text === 'Editor Worker')).toBe(true)
-  expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(false)
-  expect(nodes.some((node) => node.text === '1.0 KiB')).toBe(false)
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Web)
+  expect(nodes.some((node) => node.textContent === 'Editor Worker')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(false)
+  expect(nodes.some((node) => node.textContent === '1.0 KiB')).toBe(false)
 })
 
 test('shows an empty state after the first refresh', () => {
-  const nodes = getWorkersVirtualDom([], true, PlatformType.Web, undefined)
-  expect(nodes.some((node) => node.text === 'No workers are running.')).toBe(true)
+  const nodes = getWorkersVirtualDom([], true, PlatformType.Web)
+  expect(nodes.some((node) => node.textContent === 'No workers are running.')).toBe(true)
 })
 
 test('does not show an empty state while loading or when a worker is present', () => {
-  expect(getWorkersVirtualDom([], false, PlatformType.Web, undefined).some((node) => node.text === 'No workers are running.')).toBe(false)
-  expect(getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined).some((node) => node.text === 'No workers are running.')).toBe(false)
+  expect(getWorkersVirtualDom([], false, PlatformType.Web).some((node) => node.textContent === 'No workers are running.')).toBe(false)
+  expect(getWorkersVirtualDom([worker], true, PlatformType.Electron).some((node) => node.textContent === 'No workers are running.')).toBe(false)
 })
 
 test('renders an error message with an alert role', () => {
   const nodes = getWorkersVirtualDom([], true, PlatformType.Web, new Error('Workers unavailable'))
-  expect(nodes.some((node) => node.role === 'alert' && node.text === 'Workers unavailable')).toBe(true)
+  expect(nodes.some((node) => node.role === 'alert' && node.textContent === 'Workers unavailable')).toBe(true)
 })
 
 test('uses the existing English strings by default', () => {
   const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
-  expect(nodes.some((node) => node.text === 'Workers')).toBe(true)
-  expect(nodes.some((node) => node.text === 'Refresh')).toBe(true)
-  expect(nodes.some((node) => node.text === 'Name')).toBe(true)
-  expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(true)
-  expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Workers')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Refresh')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Name')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
   expect(nodes[3]?.ariaLabel).toBe('Workers')
-  expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.text === 'No workers are running.')).toBe(true)
+  expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.textContent === 'No workers are running.')).toBe(true)
 })
 
 test('uses substituted strings in labels, empty state, and the table accessible name', () => {
@@ -70,11 +70,13 @@ test('uses substituted strings in labels, empty state, and the table accessible 
     workers: (): string => 'translated workers',
   }
   const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron, undefined, strings)
-  expect(nodes.some((node) => node.text === 'translated workers')).toBe(true)
-  expect(nodes.some((node) => node.text === 'translated refresh')).toBe(true)
-  expect(nodes.some((node) => node.text === 'translated name')).toBe(true)
-  expect(nodes.some((node) => node.text === 'translated heap')).toBe(true)
-  expect(nodes.some((node) => node.text === 'translated unavailable')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'translated workers')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'translated refresh')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'translated name')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'translated heap')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'translated unavailable')).toBe(true)
   expect(nodes[3]?.ariaLabel).toBe('translated workers')
-  expect(getWorkersVirtualDom([], true, PlatformType.Web, undefined, strings).some((node) => node.text === 'translated empty state')).toBe(true)
+  expect(getWorkersVirtualDom([], true, PlatformType.Web, undefined, strings).some((node) => node.textContent === 'translated empty state')).toBe(
+    true,
+  )
 })

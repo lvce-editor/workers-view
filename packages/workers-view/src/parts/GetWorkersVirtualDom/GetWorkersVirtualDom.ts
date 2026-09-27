@@ -8,7 +8,7 @@ import * as GetWorkerRow from '../GetWorkerRow/GetWorkerRow.ts'
 import * as WorkersViewStrings from '../WorkersViewStrings/WorkersViewStrings.ts'
 
 const getError = (error: Error | undefined): readonly VirtualDomNode[] =>
-  error ? [{ className: 'workers-view-error', role: AriaRoles.Alert, text: error.message, type: VirtualDomElements.P }] : []
+  error ? [{ className: 'workers-view-error', role: AriaRoles.Alert, textContent: error.message, type: VirtualDomElements.P }] : []
 
 export const getWorkersVirtualDom = (
   workers: readonly DisplayedWorker[],
@@ -19,21 +19,20 @@ export const getWorkersVirtualDom = (
 ): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
   const headerCells = [
-    { className: 'workers-view-table-header-cell', role: AriaRoles.ColumnHeader, text: strings.name(), type: VirtualDomElements.Th },
+    { className: 'workers-view-table-header-cell', role: AriaRoles.ColumnHeader, textContent: strings.name(), type: VirtualDomElements.Th },
     {
       className: 'workers-view-table-header-cell',
       role: AriaRoles.ColumnHeader,
-      text: strings.javaScriptHeapUsed(),
+      textContent: strings.javaScriptHeapUsed(),
       type: VirtualDomElements.Th,
     },
   ]
   const headerRow = { childCount: headerCells.length, className: 'workers-view-table-header-row', role: AriaRoles.Row, type: VirtualDomElements.Tr }
-  const title = { childCount: 1, className: 'workers-view-title', text: strings.workers(), type: VirtualDomElements.H1 }
+  const title = { className: 'workers-view-title', textContent: strings.workers(), type: VirtualDomElements.H1 }
   const refreshButton = {
-    childCount: 1,
     className: 'workers-view-refresh-button',
     onClick: DomEventListenerFunctions.Refresh,
-    text: strings.refresh(),
+    textContent: strings.refresh(),
     type: VirtualDomElements.Button,
   }
   const columns = showMemory ? headerCells : headerCells.slice(0, 1)
@@ -45,15 +44,8 @@ export const getWorkersVirtualDom = (
     role: AriaRoles.Table,
     type: VirtualDomElements.Table,
   }
-  const children = [
-    title,
-    refreshButton,
-    ...getError(error),
-    table,
-    { ...headerRow, childCount: columns.length },
-    ...columns,
-    ...rows,
-    ...GetEmptyState.getEmptyState(workers, loaded, strings),
-  ]
-  return [{ childCount: children.length, className: 'workers-view', type: VirtualDomElements.Div }, ...children]
+  const errorDom = getError(error)
+  const emptyDom = GetEmptyState.getEmptyState(workers, loaded, strings)
+  const children = [title, refreshButton, ...errorDom, table, { ...headerRow, childCount: columns.length }, ...columns, ...rows, ...emptyDom]
+  return [{ childCount: 3 + errorDom.length + emptyDom.length, className: 'workers-view', type: VirtualDomElements.Div }, ...children]
 }
