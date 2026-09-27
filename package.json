@@ -26,20 +26,13 @@
     "test": "npm test --workspaces --if-present",
     "type-check": "tsc -b"
   },
-  "nodemonConfig": {
-    "watch": [
-      "src"
-    ],
-    "ext": "ts,js",
-    "exec": "node scripts/build.js"
-  },
   "prettier": {
     "semi": false,
     "singleQuote": true,
     "printWidth": 150
   },
   "devDependencies": {
-    "@lvce-editor/eslint-config": "^18.4.0",
+    "@lvce-editor/eslint-config": "^18.14.2",
     "eslint": "^10.8.1",
     "knip": "^6.29.0",
     "prettier": "^3.9.6",

@@ -12,7 +12,7 @@ const getMemoryUsage = async (runtimeName: string): Promise<{ readonly usedSize:
     mainProcessState.initialized = true
   }
   const windowId = await RendererWorker.getWindowId()
-  return MainProcess.invoke('ElectronDeveloper.getWorkerMemoryUsage', windowId, runtimeName)
+  return MainProcess.getWorkerMemoryUsage(windowId, runtimeName)
 }
 
 export const refresh = (state: WorkersState): Promise<WorkersState> =>

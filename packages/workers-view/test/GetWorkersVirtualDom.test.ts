@@ -22,6 +22,11 @@ test('shows a heap column in Electron and leaves missing measurements unavailabl
   expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
 })
 
+test('formats worker memory in Electron', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron)
+  expect(nodes.some((node) => node.text === '1.0 KiB')).toBe(true)
+})
+
 test('shows only worker names outside Electron', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Web, undefined)
   expect(nodes.some((node) => node.text === 'Editor Worker')).toBe(true)
@@ -42,4 +47,34 @@ test('does not show an empty state while loading or when a worker is present', (
 test('renders an error message with an alert role', () => {
   const nodes = getWorkersVirtualDom([], true, PlatformType.Web, new Error('Workers unavailable'))
   expect(nodes.some((node) => node.role === 'alert' && node.text === 'Workers unavailable')).toBe(true)
+})
+
+test('uses the existing English strings by default', () => {
+  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
+  expect(nodes.some((node) => node.text === 'Workers')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Refresh')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Name')).toBe(true)
+  expect(nodes.some((node) => node.text === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.text === 'Unavailable')).toBe(true)
+  expect(nodes[3]?.ariaLabel).toBe('Workers')
+  expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.text === 'No workers are running.')).toBe(true)
+})
+
+test('uses substituted strings in labels, empty state, and the table accessible name', () => {
+  const strings = {
+    javaScriptHeapUsed: (): string => 'translated heap',
+    name: (): string => 'translated name',
+    noWorkersAreRunning: (): string => 'translated empty state',
+    refresh: (): string => 'translated refresh',
+    unavailable: (): string => 'translated unavailable',
+    workers: (): string => 'translated workers',
+  }
+  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron, undefined, strings)
+  expect(nodes.some((node) => node.text === 'translated workers')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated refresh')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated name')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated heap')).toBe(true)
+  expect(nodes.some((node) => node.text === 'translated unavailable')).toBe(true)
+  expect(nodes[3]?.ariaLabel).toBe('translated workers')
+  expect(getWorkersVirtualDom([], true, PlatformType.Web, undefined, strings).some((node) => node.text === 'translated empty state')).toBe(true)
 })
