@@ -6,7 +6,7 @@ import { refresh } from '../src/parts/Refresh/Refresh.ts'
 const getWorkers = jest.fn<RefreshServices['getWorkers']>()
 const getMemoryUsage = jest.fn<RefreshServices['getMemoryUsage']>()
 const services: RefreshServices = { getMemoryUsage, getWorkers }
-const state = { height: 100, loaded: false, platform: PlatformType.Web, uid: 7, width: 200, workers: [] }
+const state = { error: undefined, height: 100, loaded: false, platform: PlatformType.Web, uid: 7, width: 200, workers: [] }
 const worker = { id: 'worker-1', name: 'Editor Worker', runtimeName: 'Editor Worker [worker-1]' }
 
 beforeEach(() => {
@@ -48,4 +48,28 @@ test('rejects invalid heap sizes as unavailable', async () => {
   const result = await refresh({ ...state, platform: PlatformType.Electron }, services)
 
   expect(result.workers[0].memory).toBeNull()
+})
+
+test('records worker-list failures as an error state', async () => {
+  getWorkers.mockRejectedValue(new Error('Workers unavailable'))
+
+  const result = await refresh(state, services)
+
+  expect(result.error?.message).toBe('Workers unavailable')
+  expect(result.loaded).toBe(true)
+})
+
+test('preserves a worker-list rejection message transported as an object', async () => {
+  getWorkers.mockRejectedValue({ message: 'Workers unavailable' })
+
+  const result = await refresh(state, services)
+
+  expect(result.error?.message).toBe('Workers unavailable')
+})
+
+test('clears an old error after a successful refresh', async () => {
+  const result = await refresh({ ...state, error: new Error('Workers unavailable') }, services)
+
+  expect(result.error).toBeUndefined()
+  expect(result.workers).toHaveLength(1)
 })

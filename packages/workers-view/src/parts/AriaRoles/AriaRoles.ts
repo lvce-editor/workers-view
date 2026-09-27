@@ -1,3 +1,4 @@
+export const Alert = 'alert'
 export const Cell = 'cell'
 export const ColumnHeader = 'columnheader'
 export const Row = 'row'

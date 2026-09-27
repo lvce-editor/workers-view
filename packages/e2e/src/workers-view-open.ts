@@ -16,5 +16,12 @@ export const test: Test = async ({ Command, expect, Locator }) => {
   await expect(heading).toHaveText('Workers')
   await expect(table).toBeVisible()
   await expect(refreshButton).toHaveText('Refresh')
-  await Command.execute('Developer.refreshWorkersView')
+  await Command.execute('Workers.setError', new Error('Workers view e2e error'))
+  const alert = view.locator('[role="alert"]')
+  await expect(alert).toHaveText('Workers view e2e error')
+  await Command.execute('Workers.autoRefresh')
+  await expect(alert).toHaveText('Workers view e2e error')
+  await Command.execute('Workers.refresh')
+  await expect(alert).toHaveCount(0)
+  await expect(table).toBeVisible()
 }
