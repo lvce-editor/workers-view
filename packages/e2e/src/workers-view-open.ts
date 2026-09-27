@@ -2,19 +2,22 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'workers-view-open'
 
-// The consumer LVCE package must release its URI route before this test can run.
-export const skip = 1
+export const test: Test = async ({ expect, Main, WorkersView }) => {
+  await WorkersView.open()
 
-export const test: Test = async ({ Command, expect, Locator }) => {
-  await Command.execute('Developer.openWorkersView')
-
-  const view = Locator('.workers-view')
-  const heading = view.locator('h1')
-  const table = view.locator('[role="table"][aria-label="Workers"]')
-  const refreshButton = view.locator('button')
+  const view = WorkersView.root()
+  const heading = WorkersView.heading()
+  const table = WorkersView.table()
+  const refreshButton = WorkersView.refreshButton()
   await expect(view).toBeVisible()
   await expect(heading).toHaveText('Workers')
   await expect(table).toBeVisible()
   await expect(refreshButton).toHaveText('Refresh')
-  await Command.execute('Developer.refreshWorkersView')
+  await WorkersView.refresh()
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify the view's real Refresh button is wired to its worker.
+  await refreshButton.click()
+  await Main.closeActiveEditor()
+  await WorkersView.open()
+  await expect(WorkersView.root()).toBeVisible()
+  await expect(WorkersView.heading()).toHaveText('Workers')
 }
