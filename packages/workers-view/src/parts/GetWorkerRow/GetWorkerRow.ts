@@ -5,12 +5,14 @@ import * as AriaRoles from '../AriaRoles/AriaRoles.ts'
 import * as GetMemoryText from '../GetMemoryText/GetMemoryText.ts'
 
 export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, strings: typeof WorkersViewStrings): readonly VirtualDomNode[] => {
-  const cells: VirtualDomNode[] = [{ className: 'workers-view-worker-cell', role: AriaRoles.Cell, text: worker.name, type: VirtualDomElements.Td }]
+  const cells: VirtualDomNode[] = [
+    { className: 'workers-view-worker-cell', role: AriaRoles.Cell, textContent: worker.name, type: VirtualDomElements.Td },
+  ]
   if (showMemory) {
     cells.push({
       className: 'workers-view-worker-cell',
       role: AriaRoles.Cell,
-      text: GetMemoryText.getMemoryText(worker.memory, strings),
+      textContent: GetMemoryText.getMemoryText(worker.memory, strings),
       type: VirtualDomElements.Td,
     })
   }

@@ -7,7 +7,7 @@ const update = async (uid: number): Promise<void> => {
   if (pending.has(uid)) return
   pending.add(uid)
   try {
-    await RendererWorker.invoke('WorkersView.update', uid)
+    await RendererWorker.invoke('Viewlet.executeViewletCommand', uid, 'autoRefresh')
   } catch (error) {
     console.error(error)
   } finally {

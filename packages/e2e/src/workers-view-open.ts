@@ -2,7 +2,7 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'workers-view-open'
 
-export const test: Test = async ({ expect, Main, WorkersView }) => {
+export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   await WorkersView.open()
 
   const view = WorkersView.root()
@@ -18,6 +18,15 @@ export const test: Test = async ({ expect, Main, WorkersView }) => {
   await refreshButton.click()
   await Main.closeActiveEditor()
   await WorkersView.open()
-  await expect(WorkersView.root()).toBeVisible()
+  const reopenedView = WorkersView.root()
+  await expect(reopenedView).toBeVisible()
   await expect(WorkersView.heading()).toHaveText('Workers')
+  await Command.execute('Workers.setError', new Error('Workers view e2e error'))
+  const alert = reopenedView.locator('[role="alert"]')
+  await expect(alert).toHaveText('Workers view e2e error')
+  await Command.execute('Workers.autoRefresh')
+  await expect(alert).toHaveText('Workers view e2e error')
+  await Command.execute('Workers.refresh')
+  await expect(alert).toHaveCount(0)
+  await expect(WorkersView.table()).toBeVisible()
 }

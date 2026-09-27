@@ -11,6 +11,6 @@ export const create = (
   platform: number,
   _assetDir: string,
 ): void => {
-  const state: WorkersState = { height, loaded: false, platform, uid, width, workers: [] }
+  const state: WorkersState = { error: undefined, height, loaded: false, platform, uid, width, workers: [] }
   WorkersStates.set(uid, state, state)
 }
