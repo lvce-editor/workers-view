@@ -4,8 +4,11 @@ import { main } from '../src/parts/Main/Main.ts'
 
 test('main', async () => {
   const { dispose, start } = mockWorkerGlobalRpc()
-  const mainPromise = main()
-  start()
-  await expect(mainPromise).resolves.toBeUndefined()
-  dispose()
+  try {
+    const mainPromise = main()
+    start()
+    await expect(mainPromise).resolves.toBeUndefined()
+  } finally {
+    dispose()
+  }
 })
