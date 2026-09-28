@@ -56,6 +56,35 @@ test('resizes without losing loaded content', async () => {
   expect(previous.width).toBe(200)
 })
 
+test('exposes and updates the current component state', async () => {
+  create()
+  const state = commandMap['Workers.getComponentState'](uid)
+  expect(state).toBe(WorkersStates.get(uid).newState)
+
+  const updatedState = { ...state, loaded: true, workers: [{ id: '1', memory: 0, name: 'Worker', runtimeName: 'Worker [1]' }] }
+  await commandMap['Workers.setComponentState'](uid, updatedState)
+
+  expect(commandMap['Workers.getComponentState'](uid)).toEqual(updatedState)
+  expect(WorkersStates.get(uid).newState).toEqual(updatedState)
+})
+
+test('rejects component state with a changed uid or an invalid value', async () => {
+  create()
+  const state = commandMap['Workers.getComponentState'](uid)
+
+  await expect(commandMap['Workers.setComponentState'](uid, { ...state, uid: uid + 1 })).rejects.toThrow(`Workers state uid must remain ${uid}`)
+  await expect(commandMap['Workers.setComponentState'](uid, [] as never)).rejects.toThrow('Workers state must be an object')
+  expect(commandMap['Workers.getComponentState'](uid)).toBe(state)
+})
+
+test('component state commands reject a disposed view', async () => {
+  create()
+  commandMap['Workers.dispose'](uid)
+
+  expect(() => commandMap['Workers.getComponentState'](uid)).toThrow()
+  await expect(commandMap['Workers.setComponentState'](uid, {})).rejects.toThrow()
+})
+
 test('automatic refresh preserves an error until a manual refresh succeeds', async () => {
   const getWorkers = jest.fn(() => [])
   RendererProcess.set(createMockRpc({ commandMap: { 'Workers.getWorkers': getWorkers } }))
