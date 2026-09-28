@@ -1,5 +1,4 @@
 export const Workers = 'Workers'
-export const Refresh = 'Refresh'
 export const Name = 'Name'
 export const JavaScriptHeapUsed = 'JavaScript heap used'
 export const Unavailable = 'Unavailable'

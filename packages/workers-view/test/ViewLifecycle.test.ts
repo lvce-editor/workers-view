@@ -72,8 +72,8 @@ test('automatic refresh preserves an error until a manual refresh succeeds', asy
   expect(getWorkers).toHaveBeenCalledTimes(2)
 })
 
-test('exposes the refresh event handler', () => {
-  expect(commandMap['Workers.renderEventListeners']()).toEqual([{ name: 1, params: ['refresh'], preventDefault: true }])
+test('does not register DOM event handlers', () => {
+  expect(commandMap['Workers.renderEventListeners']()).toEqual([])
 })
 
 test('disposal also stops an independently started refresh interval', () => {
