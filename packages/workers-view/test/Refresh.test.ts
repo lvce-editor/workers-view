@@ -6,7 +6,17 @@ import { refresh } from '../src/parts/Refresh/Refresh.ts'
 const getWorkers = jest.fn<RefreshServices['getWorkers']>()
 const getMemoryUsages = jest.fn<RefreshServices['getMemoryUsages']>()
 const services: RefreshServices = { getMemoryUsages, getWorkers }
-const state = { error: undefined, height: 100, loaded: false, platform: PlatformType.Web, uid: 7, width: 200, workers: [] }
+const state = {
+  error: undefined,
+  height: 100,
+  loaded: false,
+  platform: PlatformType.Web,
+  sortColumn: undefined,
+  sortDirection: undefined,
+  uid: 7,
+  width: 200,
+  workers: [],
+}
 const worker = { id: 'worker-1', name: 'Editor Worker', runtimeName: 'Editor Worker [worker-1]' }
 
 beforeEach(() => {

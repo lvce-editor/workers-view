@@ -13,6 +13,16 @@ export const create = (
   _assetDir: string,
 ): void => {
   ViewLifetime.create(uid)
-  const state: WorkersState = { error: undefined, height, loaded: false, platform, uid, width, workers: [] }
+  const state: WorkersState = {
+    error: undefined,
+    height,
+    loaded: false,
+    platform,
+    sortColumn: undefined,
+    sortDirection: undefined,
+    uid,
+    width,
+    workers: [],
+  }
   WorkersStates.set(uid, state, state)
 }

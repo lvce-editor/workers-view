@@ -8,11 +8,16 @@ export interface DisplayedWorker extends TrackedWorker {
   readonly memory: number | null
 }
 
+export type SortColumn = 'memory' | 'name'
+export type SortDirection = 'ascending' | 'descending'
+
 export interface WorkersState {
   readonly error: Error | undefined
   readonly height: number
   readonly loaded: boolean
   readonly platform: number
+  readonly sortColumn: SortColumn | undefined
+  readonly sortDirection: SortDirection | undefined
   readonly uid: number
   readonly width: number
   readonly workers: readonly DisplayedWorker[]
