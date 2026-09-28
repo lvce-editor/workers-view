@@ -26,7 +26,9 @@ test('uses PascalCase class names for every Workers view element', () => {
     'WorkersViewTable',
     'WorkersViewTableHeaderRow',
     'WorkersViewTableHeaderCell',
+    'WorkersViewTableHeaderButton',
     'WorkersViewTableHeaderCell',
+    'WorkersViewTableHeaderButton',
     'WorkersViewWorkerRow',
     'WorkersViewWorkerCell',
     'WorkersViewWorkerCell',
@@ -43,6 +45,13 @@ test('shows a heap column in Electron and leaves missing measurements unavailabl
 test('formats worker memory in Electron', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron)
   expect(nodes.some((node) => node.textContent === '1.0 KiB')).toBe(true)
+})
+
+test('renders sortable headers and exposes the selected sort direction', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, 'memory', 'descending')
+  const headers = nodes.filter((node) => node.className === 'WorkersViewTableHeaderCell')
+  expect(headers.map((header) => header['aria-sort'])).toEqual(['none', 'descending'])
+  expect(nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton').map((button) => button.onClick)).toEqual([2, 3])
 })
 
 test('shows only worker names outside Electron', () => {

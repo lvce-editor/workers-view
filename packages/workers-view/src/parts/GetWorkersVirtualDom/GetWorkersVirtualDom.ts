@@ -16,16 +16,28 @@ export const getWorkersVirtualDom = (
   platform: number,
   error: Error | undefined = undefined,
   strings: typeof WorkersViewStrings = WorkersViewStrings,
+  sortColumn: 'memory' | 'name' | undefined = undefined,
+  sortDirection: 'ascending' | 'descending' | undefined = undefined,
 ): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
-  const headerCells = [
-    { className: 'WorkersViewTableHeaderCell', role: AriaRoles.ColumnHeader, textContent: strings.name(), type: VirtualDomElements.Th },
+  const getHeaderCell = (column: 'memory' | 'name', textContent: string, listener: number): VirtualDomNode[] => [
     {
+      'aria-sort': sortColumn === column ? sortDirection : 'none',
+      childCount: 1,
       className: 'WorkersViewTableHeaderCell',
       role: AriaRoles.ColumnHeader,
-      textContent: strings.javaScriptHeapUsed(),
       type: VirtualDomElements.Th,
     },
+    {
+      className: 'WorkersViewTableHeaderButton',
+      onClick: listener,
+      textContent,
+      type: VirtualDomElements.Button,
+    },
+  ]
+  const headerCells = [
+    getHeaderCell('name', strings.name(), DomEventListenerFunctions.SortByName),
+    getHeaderCell('memory', strings.javaScriptHeapUsed(), DomEventListenerFunctions.SortByMemory),
   ]
   const headerRow = { childCount: headerCells.length, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
   const title = { className: 'WorkersViewTitle', textContent: strings.workers(), type: VirtualDomElements.H1 }
@@ -35,7 +47,7 @@ export const getWorkersVirtualDom = (
     textContent: strings.refresh(),
     type: VirtualDomElements.Button,
   }
-  const columns = showMemory ? headerCells : headerCells.slice(0, 1)
+  const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
   const rows = workers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, strings))
   const table = {
     ariaLabel: strings.workers(),
@@ -46,6 +58,6 @@ export const getWorkersVirtualDom = (
   }
   const errorDom = getError(error)
   const emptyDom = GetEmptyState.getEmptyState(workers, loaded, strings)
-  const children = [title, refreshButton, ...errorDom, table, { ...headerRow, childCount: columns.length }, ...columns, ...rows, ...emptyDom]
+  const children = [title, refreshButton, ...errorDom, table, { ...headerRow, childCount: showMemory ? 2 : 1 }, ...columns, ...rows, ...emptyDom]
   return [{ childCount: 3 + errorDom.length + emptyDom.length, className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }

@@ -11,6 +11,8 @@ import * as RenderEventListeners from '../RenderEventListeners/RenderEventListen
 import * as Resize from '../Resize/Resize.ts'
 import * as SetComponentState from '../SetComponentState/SetComponentState.ts'
 import * as SetError from '../SetError/SetError.ts'
+import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
+import * as SortByName from '../SortByName/SortByName.ts'
 import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
 const handleDirectMessagePort = (port: MessagePort, setAsRendererProcess?: boolean): Promise<void> =>
@@ -31,4 +33,6 @@ export const commandMap = {
   'Workers.resize': WorkersStates.wrapCommand(Resize.resize),
   'Workers.setComponentState': SetComponentState.setComponentState,
   'Workers.setError': WorkersStates.wrapCommand(SetError.setError),
+  'Workers.sortByMemory': WorkersStates.wrapCommand(SortByMemory.sortByMemory),
+  'Workers.sortByName': WorkersStates.wrapCommand(SortByName.sortByName),
 }
