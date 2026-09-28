@@ -17,13 +17,13 @@ afterEach(() => {
 
 test('creates an unloaded view and renders its initial DOM and dimensions', () => {
   create()
-  const { oldState, newState } = WorkersStates.get(uid)
+  const { newState, oldState } = WorkersStates.get(uid)
   expect(oldState).toBe(newState)
   expect(newState).toEqual({ error: undefined, height: 100, loaded: false, platform: PlatformType.Web, uid, width: 200, workers: [] })
   const diff = commandMap['Workers.diff2'](uid)
   expect(diff).toEqual([1, 2])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
-    [ViewletCommand.SetDom2, uid, GetWorkersVirtualDom.getWorkersVirtualDom([], false, PlatformType.Web, undefined)],
+    [ViewletCommand.SetDom2, uid, GetWorkersVirtualDom.getWorkersVirtualDom([], false, PlatformType.Web)],
     [ViewletCommand.SetCss, uid, 'width:200px;height:100px;overflow:auto;'],
   ])
 })
@@ -49,7 +49,7 @@ test('loads workers, commits the rendered state, and disposes the refresh timer 
 
 test('resizes without losing loaded content', async () => {
   create()
-  const previous = { ...WorkersStates.get(uid).newState, loaded: true, workers: [{ id: '1', name: 'Worker', runtimeName: 'Worker [1]', memory: 0 }] }
+  const previous = { ...WorkersStates.get(uid).newState, loaded: true, workers: [{ id: '1', memory: 0, name: 'Worker', runtimeName: 'Worker [1]' }] }
   WorkersStates.set(uid, previous, previous)
   await commandMap['Workers.resize'](uid, 450, 300)
   expect(WorkersStates.get(uid).newState).toEqual({ ...previous, height: 300, width: 450 })

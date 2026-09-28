@@ -33,13 +33,8 @@ test('starts only one interval per view and stops it on disposal', async () => {
 })
 
 test('skips overlapping updates while allowing other views to refresh', async () => {
-  let resolveUpdate!: () => void
-  update.mockImplementationOnce(
-    () =>
-      new Promise<void>((resolve) => {
-        resolveUpdate = resolve
-      }),
-  )
+  const updateResult = Promise.withResolvers<void>()
+  update.mockReturnValueOnce(updateResult.promise)
   AutoRefresh.start(1)
   await jest.advanceTimersByTimeAsync(1000)
   AutoRefresh.start(2)
@@ -49,7 +44,7 @@ test('skips overlapping updates while allowing other views to refresh', async ()
     [2, 'autoRefresh'],
     [2, 'autoRefresh'],
   ])
-  resolveUpdate()
+  updateResult.resolve()
   await jest.advanceTimersByTimeAsync(1000)
   expect(update.mock.calls.slice(-2)).toEqual([
     [1, 'autoRefresh'],

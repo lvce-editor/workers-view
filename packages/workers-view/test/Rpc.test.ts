@@ -1,109 +1,102 @@
-import { afterEach, expect, jest, test } from '@jest/globals'
+import type { Rpc } from '@lvce-editor/rpc'
+import { afterAll, afterEach, expect, jest, test } from '@jest/globals'
 import { PlatformType } from '@lvce-editor/constants'
-import * as Rpc from '@lvce-editor/rpc'
+import { createMockRpc, PlainMessagePortRpc } from '@lvce-editor/rpc'
 import { MainProcess, RendererProcess as RendererProcessRegistry, RendererWorker } from '@lvce-editor/rpc-registry'
+import { commandMap } from '../src/parts/CommandMap/CommandMap.ts'
+import { handleMessagePort } from '../src/parts/HandleMessagePort/HandleMessagePort.ts'
+import { refresh } from '../src/parts/RefreshWorkers/RefreshWorkers.ts'
+import * as RendererProcess from '../src/parts/RendererProcess/RendererProcess.ts'
 
-const rendererRpc = Rpc.createMockRpc({ commandMap: { 'Workers.getWorkers': () => [] } })
-const createPortRpc = jest.fn<typeof Rpc.PlainMessagePortRpc.create>().mockResolvedValue(rendererRpc)
-const memoryUsage = jest.fn<(...args: readonly unknown[]) => Promise<{ usedSize: number }>>().mockResolvedValue({ usedSize: 4096 })
-const mainRpc = Rpc.createMockRpc({ commandMap: { 'ElectronDeveloper.getWorkerMemoryUsage': memoryUsage } })
-const createMainRpc = jest.fn<typeof Rpc.LazyTransferMessagePortRpcParent.create>().mockResolvedValue(mainRpc)
-
-jest.unstable_mockModule('@lvce-editor/rpc', () => ({
-  ...Rpc,
-  LazyTransferMessagePortRpcParent: { create: createMainRpc },
-  PlainMessagePortRpc: { create: createPortRpc },
-}))
-
-const { commandMap } = await import('../src/parts/CommandMap/CommandMap.ts')
-const { handleMessagePort } = await import('../src/parts/HandleMessagePort/HandleMessagePort.ts')
-const { initializeMainProcess } = await import('../src/parts/InitializeMainProcess/InitializeMainProcess.ts')
-const { refresh } = await import('../src/parts/RefreshWorkers/RefreshWorkers.ts')
-const RendererProcess = await import('../src/parts/RendererProcess/RendererProcess.ts')
-
-const port = {} as MessagePort
-const state = { error: undefined, height: 100, loaded: false, platform: PlatformType.Electron, uid: 7, width: 200, workers: [] }
+const ports: MessagePort[] = []
+const channel = (): MessageChannel => {
+  const value = new MessageChannel()
+  ports.push(value.port1, value.port2)
+  return value
+}
+const connect = async (commands: Readonly<Record<string, unknown>> = {}, setAsRendererProcess?: boolean): Promise<Rpc> => {
+  const { port1, port2 } = channel()
+  const peer = await PlainMessagePortRpc.create({ commandMap: commands, messagePort: port2 })
+  await commandMap['Workers.handleMessagePort'](port1, setAsRendererProcess)
+  return peer
+}
 
 afterEach(() => {
-  jest.clearAllMocks()
-})
-
-test('registers a renderer port and dispatches commands before requesting a render', async () => {
-  const requestRender = jest.fn<(...args: readonly unknown[]) => Promise<void>>().mockResolvedValue(undefined)
-  RendererWorker.registerMockRpc({ 'Viewlet.requestRender': requestRender })
-  await commandMap['Workers.handleMessagePort'](port)
-  expect(createPortRpc).toHaveBeenCalledWith({ commandMap: expect.any(Object), messagePort: port })
-  expect(await RendererProcess.invoke('Workers.getWorkers')).toEqual([])
-  const execute = createPortRpc.mock.calls[0][0].commandMap['Viewlet.executeViewletCommand']
-  await execute(7, 'create', '', 0, 0, 200, 100, PlatformType.Web, '')
-  expect(requestRender).toHaveBeenCalledTimes(1)
-  expect(requestRender).toHaveBeenCalledWith(7)
+  for (const port of ports) port.close()
+  ports.length = 0
   commandMap['Workers.dispose'](7)
 })
 
+afterAll(async () => {
+  await MainProcess.dispose()
+})
+
+test('registers a renderer port and dispatches commands before requesting a render', async () => {
+  const requestRender = jest.fn()
+  RendererWorker.registerMockRpc({ 'Viewlet.requestRender': requestRender })
+  const peer = await connect({ 'Workers.getWorkers': () => [] })
+  expect(await RendererProcess.invoke('Workers.getWorkers')).toEqual([])
+  await peer.invoke('Viewlet.executeViewletCommand', 7, 'create', '', 0, 0, 200, 100, PlatformType.Web, '')
+  expect(requestRender).toHaveBeenCalledTimes(1)
+  expect(requestRender).toHaveBeenCalledWith(7)
+})
+
 test('does not replace the renderer connection when explicitly disabled', async () => {
-  RendererProcessRegistry.set(Rpc.createMockRpc({ commandMap: { 'Workers.getWorkers': () => ['original'] } }))
-  await commandMap['Workers.handleMessagePort'](port, false)
+  RendererProcessRegistry.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => ['original'] } }))
+  await connect({}, false)
   expect(await RendererProcess.invoke('Workers.getWorkers')).toEqual(['original'])
 })
 
 test('rejects unknown and failed view commands without requesting a render', async () => {
   const requestRender = jest.fn()
   RendererWorker.registerMockRpc({ 'Viewlet.requestRender': requestRender })
-  await commandMap['Workers.handleMessagePort'](port)
-  const execute = createPortRpc.mock.calls[0][0].commandMap['Viewlet.executeViewletCommand']
-  await expect(execute(7, 'unknown')).rejects.toThrow('Viewlet command not found: unknown')
-  await expect(execute(999, 'diff2')).rejects.toThrow()
+  const peer = await connect()
+  await expect(peer.invoke('Viewlet.executeViewletCommand', 7, 'unknown')).rejects.toThrow('Viewlet command not found: unknown')
+  await expect(peer.invoke('Viewlet.executeViewletCommand', 999, 'diff2')).rejects.toThrow()
   expect(requestRender).not.toHaveBeenCalled()
 })
 
-test('creates the main process RPC and forwards its port through the renderer worker', async () => {
-  const send = jest.fn<(...args: readonly unknown[]) => Promise<void>>().mockResolvedValue(undefined)
-  RendererWorker.registerMockRpc({ 'SendMessagePortToMainProcess.sendMessagePortToMainProcess': send })
-  await initializeMainProcess()
-  expect(createMainRpc).toHaveBeenCalledWith({ commandMap: {}, send: expect.any(Function) })
-  await createMainRpc.mock.calls[0][0].send(port)
-  expect(send).toHaveBeenCalledTimes(1)
-  expect(send).toHaveBeenCalledWith(port, 'HandleElectronMessagePort.handleElectronMessagePort', 0)
-  await MainProcess.getWorkerMemoryUsage(3, 'worker')
-  expect(memoryUsage).toHaveBeenCalledTimes(1)
-  expect(memoryUsage).toHaveBeenCalledWith(3, 'worker')
-})
-
-test('initializes Electron measurements once and uses each worker runtime name and window id', async () => {
-  const workers = [
-    { id: '1', name: 'Editor Worker', runtimeName: 'Editor Worker [1]' },
-    { id: '2', name: 'Editor Worker', runtimeName: 'Editor Worker [2]' },
-  ]
-  RendererProcessRegistry.set(Rpc.createMockRpc({ commandMap: { 'Workers.getWorkers': () => workers } }))
-  RendererWorker.registerMockRpc({ 'GetWindowId.getWindowId': () => 42 })
+test('initializes the main process once and measures each runtime in the correct window', async () => {
+  const memoryUsage = jest.fn(() => ({ usedSize: 4096 }))
+  const send = jest.fn(async (port: MessagePort, _command: string, _id: number): Promise<void> => {
+    ports.push(port)
+    await PlainMessagePortRpc.create({ commandMap: { 'ElectronDeveloper.getWorkerMemoryUsage': memoryUsage }, messagePort: port })
+  })
+  RendererWorker.registerMockRpc({
+    'GetWindowId.getWindowId': () => 42,
+    'SendMessagePortToMainProcess.sendMessagePortToMainProcess': send,
+  })
+  const worker = { id: '1', name: 'Editor Worker', runtimeName: 'Editor Worker [1]' }
+  RendererProcessRegistry.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => [worker] } }))
+  const state = { error: undefined, height: 100, loaded: false, platform: PlatformType.Electron, uid: 7, width: 200, workers: [] }
   const result = await refresh(state)
-  expect(result.workers).toEqual(workers.map((worker) => ({ ...worker, memory: 4096 })))
-  expect(memoryUsage.mock.calls).toEqual([
-    [42, workers[0].runtimeName],
-    [42, workers[1].runtimeName],
-  ])
+  expect(result.workers).toEqual([{ ...worker, memory: 4096 }])
   await refresh(result)
-  expect(createMainRpc).toHaveBeenCalledTimes(1)
-  expect(memoryUsage).toHaveBeenCalledTimes(4)
+  expect(send).toHaveBeenCalledTimes(1)
+  expect(send).toHaveBeenCalledWith(expect.any(MessagePort), 'HandleElectronMessagePort.handleElectronMessagePort', 0)
+  expect(memoryUsage.mock.calls).toEqual([
+    [42, worker.runtimeName],
+    [42, worker.runtimeName],
+  ])
 })
 
 test('waits for asynchronous commands before requesting a render', async () => {
-  let finish!: () => void
-  const command = jest.fn<(uid: number, argument: string) => Promise<void>>(
-    () =>
-      new Promise<void>((resolve) => {
-        finish = resolve
-      }),
-  )
+  const finished = Promise.withResolvers<void>()
+  const started = Promise.withResolvers<void>()
+  const command = jest.fn((_uid: number, _argument: string): Promise<void> => {
+    started.resolve()
+    return finished.promise
+  })
   const requestRender = jest.fn()
   RendererWorker.registerMockRpc({ 'Viewlet.requestRender': requestRender })
-  await handleMessagePort(port, { 'Workers.refresh': command })
-  const execute = createPortRpc.mock.calls[0][0].commandMap['Viewlet.executeViewletCommand']
-  const pending = execute(7, 'refresh', 'argument')
+  const { port1, port2 } = channel()
+  const peer = await PlainMessagePortRpc.create({ commandMap: {}, messagePort: port2 })
+  await handleMessagePort(port1, { 'Workers.refresh': command })
+  const pending = peer.invoke('Viewlet.executeViewletCommand', 7, 'refresh', 'argument')
+  await started.promise
   expect(command).toHaveBeenCalledWith(7, 'argument')
   expect(requestRender).not.toHaveBeenCalled()
-  finish()
+  finished.resolve()
   await pending
   expect(requestRender).toHaveBeenCalledWith(7)
 })
