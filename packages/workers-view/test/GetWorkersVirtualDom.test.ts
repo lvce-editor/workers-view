@@ -16,6 +16,24 @@ test('gives every element a stable class in loading, populated, and empty states
   expect(everyElementHasClassName(getWorkersVirtualDom([], true, PlatformType.Electron))).toBe(true)
 })
 
+test('uses PascalCase class names for every Workers view element', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, new Error('Workers unavailable'))
+  expect(nodes.map((node) => node.className)).toEqual([
+    'WorkersView',
+    'WorkersViewTitle',
+    'WorkersViewRefreshButton',
+    'WorkersViewError',
+    'WorkersViewTable',
+    'WorkersViewTableHeaderRow',
+    'WorkersViewTableHeaderCell',
+    'WorkersViewTableHeaderCell',
+    'WorkersViewWorkerRow',
+    'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell',
+  ])
+  expect(getWorkersVirtualDom([], true, PlatformType.Web).map((node) => node.className)).toContain('WorkersViewEmptyState')
+})
+
 test('shows a heap column in Electron and leaves missing measurements unavailable', () => {
   const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
   expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(true)

@@ -9,5 +9,5 @@ export const getEmptyState = (
   strings: typeof WorkersViewStrings,
 ): readonly VirtualDomNode[] => {
   if (workers.length > 0 || !loaded) return []
-  return [{ className: 'workers-view-empty-state', role: AriaRoles.Status, textContent: strings.noWorkersAreRunning(), type: VirtualDomElements.P }]
+  return [{ className: 'WorkersViewEmptyState', role: AriaRoles.Status, textContent: strings.noWorkersAreRunning(), type: VirtualDomElements.P }]
 }
