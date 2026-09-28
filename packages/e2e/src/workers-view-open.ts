@@ -8,12 +8,22 @@ export const test: Test = async ({ Command, expect, Locator, Main, WorkersView }
   const view = Locator('.WorkersView')
   const heading = view.locator('h1')
   const table = view.locator('[role="table"][aria-label="Workers"]')
-  const refreshButton = view.locator('button')
+  const refreshButton = view.locator('.WorkersViewRefreshButton')
   await expect(view).toBeVisible()
   await expect(heading).toHaveText('Workers')
   await expect(table).toBeVisible()
   await expect(refreshButton).toHaveText('Refresh')
+  const nameHeader = view.locator('button').nth(1)
+  const nameHeaderCell = view.locator('th').first()
+  await expect(nameHeader).toHaveText('Name')
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify the real Name header control toggles sorting.
+  await nameHeader.click()
+  await expect(nameHeaderCell).toHaveAttribute('aria-sort', 'ascending')
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify a repeated real header click reverses the sort.
+  await nameHeader.click()
+  await expect(nameHeaderCell).toHaveAttribute('aria-sort', 'descending')
   await WorkersView.refresh()
+  await expect(nameHeaderCell).toHaveAttribute('aria-sort', 'descending')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify the view's real Refresh button is wired to its worker.
   await refreshButton.click()
   await Main.closeActiveEditor()

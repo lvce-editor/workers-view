@@ -1,7 +1,17 @@
 import { expect, test } from '@jest/globals'
 import { setError } from '../src/parts/SetError/SetError.ts'
 
-const state = { error: undefined, height: 100, loaded: false, platform: 0, uid: 7, width: 200, workers: [] }
+const state = {
+  error: undefined,
+  height: 100,
+  loaded: false,
+  platform: 0,
+  sortColumn: undefined,
+  sortDirection: undefined,
+  uid: 7,
+  width: 200,
+  workers: [],
+}
 
 test('preserves the message from an Error instance', () => {
   const result = setError(state, new Error('Injected workers error'))

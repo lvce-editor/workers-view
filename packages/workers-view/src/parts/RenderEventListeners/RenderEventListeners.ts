@@ -6,4 +6,14 @@ export const renderEventListeners = (): readonly any[] => [
     params: ['refresh'],
     preventDefault: true,
   },
+  {
+    name: DomEventListenerFunctions.SortByName,
+    params: ['sortByName'],
+    preventDefault: true,
+  },
+  {
+    name: DomEventListenerFunctions.SortByMemory,
+    params: ['sortByMemory'],
+    preventDefault: true,
+  },
 ]

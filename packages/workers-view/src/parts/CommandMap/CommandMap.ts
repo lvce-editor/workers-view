@@ -9,6 +9,8 @@ import * as Render2 from '../Render2/Render2.ts'
 import * as RenderEventListeners from '../RenderEventListeners/RenderEventListeners.ts'
 import * as Resize from '../Resize/Resize.ts'
 import * as SetError from '../SetError/SetError.ts'
+import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
+import * as SortByName from '../SortByName/SortByName.ts'
 import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
 const handleDirectMessagePort = (port: MessagePort, setAsRendererProcess?: boolean): Promise<void> =>
@@ -27,4 +29,6 @@ export const commandMap = {
   'Workers.renderEventListeners': RenderEventListeners.renderEventListeners,
   'Workers.resize': WorkersStates.wrapCommand(Resize.resize),
   'Workers.setError': WorkersStates.wrapCommand(SetError.setError),
+  'Workers.sortByMemory': WorkersStates.wrapCommand(SortByMemory.sortByMemory),
+  'Workers.sortByName': WorkersStates.wrapCommand(SortByName.sortByName),
 }

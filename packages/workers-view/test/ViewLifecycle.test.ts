@@ -2,6 +2,7 @@ import { afterEach, expect, jest, test } from '@jest/globals'
 import { PlatformType, ViewletCommand } from '@lvce-editor/constants'
 import { createMockRpc } from '@lvce-editor/rpc'
 import { RendererProcess } from '@lvce-editor/rpc-registry'
+import type { TrackedWorker } from '../src/parts/WorkersState/WorkersState.ts'
 import * as AutoRefresh from '../src/parts/AutoRefresh/AutoRefresh.ts'
 import { commandMap } from '../src/parts/CommandMap/CommandMap.ts'
 import * as GetWorkersVirtualDom from '../src/parts/GetWorkersVirtualDom/GetWorkersVirtualDom.ts'
@@ -19,7 +20,17 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
   create()
   const { newState, oldState } = WorkersStates.get(uid)
   expect(oldState).toBe(newState)
-  expect(newState).toEqual({ error: undefined, height: 100, loaded: false, platform: PlatformType.Web, uid, width: 200, workers: [] })
+  expect(newState).toEqual({
+    error: undefined,
+    height: 100,
+    loaded: false,
+    platform: PlatformType.Web,
+    sortColumn: undefined,
+    sortDirection: undefined,
+    uid,
+    width: 200,
+    workers: [],
+  })
   const diff = commandMap['Workers.diff2'](uid)
   expect(diff).toEqual([1, 2])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
@@ -72,8 +83,41 @@ test('automatic refresh preserves an error until a manual refresh succeeds', asy
   expect(getWorkers).toHaveBeenCalledTimes(2)
 })
 
+test('refresh preserves a sort selection made while worker data is loading', async () => {
+  const workerResponse = Promise.withResolvers<readonly TrackedWorker[]>()
+  RendererProcess.set(
+    createMockRpc({
+      commandMap: { 'Workers.getWorkers': () => workerResponse.promise },
+    }),
+  )
+  create()
+  const refreshPromise = commandMap['Workers.refresh'](uid)
+  await commandMap['Workers.sortByName'](uid)
+  workerResponse.resolve([
+    { id: 'z', name: 'Zulu', runtimeName: 'Zulu' },
+    { id: 'a', name: 'Alpha', runtimeName: 'Alpha' },
+  ])
+  await refreshPromise
+  const { newState } = WorkersStates.get(uid)
+  expect(newState.sortColumn).toBe('name')
+  expect(newState.sortDirection).toBe('ascending')
+  expect(newState.workers.map((worker) => worker.name)).toEqual(['Alpha', 'Zulu'])
+})
+
+test('sorts memory by default in descending order when its header command is selected', async () => {
+  create()
+  await commandMap['Workers.sortByMemory'](uid)
+  const { newState } = WorkersStates.get(uid)
+  expect(newState.sortColumn).toBe('memory')
+  expect(newState.sortDirection).toBe('descending')
+})
+
 test('exposes the refresh event handler', () => {
-  expect(commandMap['Workers.renderEventListeners']()).toEqual([{ name: 1, params: ['refresh'], preventDefault: true }])
+  expect(commandMap['Workers.renderEventListeners']()).toEqual([
+    { name: 1, params: ['refresh'], preventDefault: true },
+    { name: 2, params: ['sortByName'], preventDefault: true },
+    { name: 3, params: ['sortByMemory'], preventDefault: true },
+  ])
 })
 
 test('disposal also stops an independently started refresh interval', () => {
