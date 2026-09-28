@@ -141,9 +141,8 @@ test('sorts memory by default in descending order when its header command is sel
   expect(newState.sortDirection).toBe('descending')
 })
 
-test('exposes the refresh event handler', () => {
+test('registers the sort event handlers without a refresh button handler', () => {
   expect(commandMap['Workers.renderEventListeners']()).toEqual([
-    { name: 1, params: ['refresh'], preventDefault: true },
     { name: 2, params: ['sortByName'], preventDefault: true },
     { name: 3, params: ['sortByMemory'], preventDefault: true },
   ])

@@ -41,12 +41,6 @@ export const getWorkersVirtualDom = (
   ]
   const headerRow = { childCount: headerCells.length, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
   const title = { className: 'WorkersViewTitle', textContent: strings.workers(), type: VirtualDomElements.H1 }
-  const refreshButton = {
-    className: 'WorkersViewRefreshButton',
-    onClick: DomEventListenerFunctions.Refresh,
-    textContent: strings.refresh(),
-    type: VirtualDomElements.Button,
-  }
   const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
   const rows = workers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, strings))
   const table = {
@@ -58,6 +52,6 @@ export const getWorkersVirtualDom = (
   }
   const errorDom = getError(error)
   const emptyDom = GetEmptyState.getEmptyState(workers, loaded, strings)
-  const children = [title, refreshButton, ...errorDom, table, { ...headerRow, childCount: showMemory ? 2 : 1 }, ...columns, ...rows, ...emptyDom]
+  const children = [title, ...errorDom, table, { ...headerRow, childCount: showMemory ? 2 : 1 }, ...columns, ...rows, ...emptyDom]
   return [{ childCount: 3 + errorDom.length + emptyDom.length, className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }
