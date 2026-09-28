@@ -1,9 +1,9 @@
 import { PlatformType } from '@lvce-editor/constants'
-import type { DisplayedWorker, TrackedWorker, WorkersState } from '../WorkersState/WorkersState.ts'
+import type { TrackedWorker, WorkersState } from '../WorkersState/WorkersState.ts'
 import * as ToError from '../ToError/ToError.ts'
 
 export interface RefreshServices {
-  readonly getMemoryUsage: (runtimeName: string) => Promise<{ readonly usedSize: number } | null>
+  readonly getMemoryUsages: () => Promise<ReadonlyMap<string, { readonly usedSize: number }>>
   readonly getWorkers: () => Promise<readonly TrackedWorker[]>
 }
 
@@ -15,22 +15,18 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
   } catch (error) {
     return { ...state, error: ToError.toError(error), loaded: true }
   }
-  let displayedWorkers: readonly DisplayedWorker[] = workers.map((worker) => ({ ...worker, memory: null }))
+  let usages: ReadonlyMap<string, { readonly usedSize: number }> = new Map()
   if (platform === PlatformType.Electron) {
-    const measuredWorkers: DisplayedWorker[] = []
-    for (const worker of workers) {
-      let memory: number | null = null
-      try {
-        const usage = await services.getMemoryUsage(worker.runtimeName)
-        if (usage && Number.isFinite(usage.usedSize)) {
-          memory = usage.usedSize
-        }
-      } catch {
-        // Workers can stop while a refresh takes its measurement.
-      }
-      measuredWorkers.push({ ...worker, memory })
+    try {
+      usages = await services.getMemoryUsages()
+    } catch {
+      // A closed debugger connection can be retried on the next refresh.
     }
-    displayedWorkers = measuredWorkers
   }
+  const displayedWorkers = workers.map((worker) => {
+    const usage = usages.get(worker.runtimeName)
+    const memory = usage && Number.isFinite(usage.usedSize) ? usage.usedSize : null
+    return { ...worker, memory }
+  })
   return { ...state, error: undefined, loaded: true, workers: displayedWorkers }
 }
