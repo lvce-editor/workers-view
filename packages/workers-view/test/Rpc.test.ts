@@ -90,7 +90,7 @@ test('initializes Electron measurements once and uses each worker runtime name a
 
 test('waits for asynchronous commands before requesting a render', async () => {
   let finish!: () => void
-  const command = jest.fn(
+  const command = jest.fn<(uid: number, argument: string) => Promise<void>>(
     () =>
       new Promise<void>((resolve) => {
         finish = resolve
