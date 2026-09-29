@@ -1,4 +1,5 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, readdir, readFile, writeFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -11,6 +12,7 @@ const getRemoteUrl = (path) => {
 }
 
 const nodeModulesPath = join(root, 'node_modules')
+const require = createRequire(import.meta.url)
 const workerPath = join(root, '.tmp', 'dist', 'dist', 'workersViewMain.js')
 const serverStaticPath = join(nodeModulesPath, '@lvce-editor', 'static-server', 'static')
 const isCommitHash = (dirent) => dirent.length === 7 && /^[a-z\d]+$/.test(dirent)
@@ -30,3 +32,7 @@ const workersViewWorkerUrl = \`${remoteUrl}\``
     await writeFile(rendererWorkerMainPath, newContent)
   }
 }
+
+const testWorkerPath = require.resolve('@lvce-editor/test-worker/dist/testWorkerMain.js')
+const staticTestWorkerPath = join(serverStaticPath, commitHash, 'packages', 'test-worker', 'dist', 'testWorkerMain.js')
+await copyFile(testWorkerPath, staticTestWorkerPath)
