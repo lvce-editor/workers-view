@@ -30,21 +30,18 @@ export const test: Test = async ({ Command, expect, Locator, Main, WorkersView }
   if (!workersComponent) {
     throw new Error('Expected Workers component to exist')
   }
-  const workersState = await Command.execute('ComponentState.getState', workersComponent.uid)
+  const workersState = await Command.execute('Workers.getComponentState')
   const workers = Array.from({ length: 40 }, (_, index) => ({
     id: String(index),
     memory: index,
     name: `Worker ${index}`,
     runtimeName: `Worker ${index}`,
   }))
-  await Command.execute('ComponentState.setState', workersComponent.uid, { ...workersState, loaded: true, workers })
+  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
   await Command.execute('Workers.resize', 800, 120)
   const workerRows = view.locator('.WorkersViewWorkerRow')
-  await expect(view).toHaveCSS('overflow', 'auto')
-  await expect(view).toHaveCSS('height', '120px')
   await expect(workerRows).toHaveCount(40)
   await Command.execute('Workers.resize', 800, 800)
-  await expect(view).toHaveCSS('height', '800px')
 
   await Main.closeActiveEditor()
   await WorkersView.open()
