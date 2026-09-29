@@ -5,6 +5,7 @@ import { RendererProcess } from '@lvce-editor/rpc-registry'
 import type { TrackedWorker } from '../src/parts/WorkersState/WorkersState.ts'
 import * as AutoRefresh from '../src/parts/AutoRefresh/AutoRefresh.ts'
 import { commandMap } from '../src/parts/CommandMap/CommandMap.ts'
+import * as DiffType from '../src/parts/DiffType/DiffType.ts'
 import * as GetWorkersVirtualDom from '../src/parts/GetWorkersVirtualDom/GetWorkersVirtualDom.ts'
 import * as WorkersStates from '../src/parts/WorkersStates/WorkersStates.ts'
 
@@ -21,6 +22,7 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
   const { newState, oldState } = WorkersStates.get(uid)
   expect(oldState).toBe(newState)
   expect(newState).toEqual({
+    domRendered: false,
     error: undefined,
     height: 100,
     loaded: false,
@@ -32,11 +34,18 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
     workers: [],
   })
   const diff = commandMap['Workers.diff2'](uid)
-  expect(diff).toEqual([1, 2])
+  expect(diff).toEqual([DiffType.RenderDom, DiffType.RenderCss])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
     [ViewletCommand.SetDom2, uid, GetWorkersVirtualDom.getWorkersVirtualDom([], false, PlatformType.Web)],
     [ViewletCommand.SetCss, uid, 'width:200px;height:100px;overflow:auto;'],
   ])
+})
+
+test('does not consider a view mounted after rendering dimensions only', () => {
+  create()
+  commandMap['Workers.render2'](uid, [DiffType.RenderCss])
+  expect(WorkersStates.get(uid).newState.domRendered).toBe(false)
+  expect(commandMap['Workers.diff2'](uid)).toContain(DiffType.RenderDom)
 })
 
 test('loads workers, commits the rendered state, and disposes the refresh timer and state', async () => {
@@ -50,30 +59,66 @@ test('loads workers, commits the rendered state, and disposes the refresh timer 
   expect(newState.workers).toEqual([{ ...worker, memory: null }])
   expect(jest.getTimerCount()).toBe(1)
   commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
-  expect(WorkersStates.get(uid).oldState).toBe(newState)
-  expect(commandMap['Workers.diff2'](uid)).toEqual([1])
+  expect(WorkersStates.get(uid).oldState).toBe(WorkersStates.get(uid).newState)
+  expect(WorkersStates.get(uid).newState.domRendered).toBe(true)
+  expect(commandMap['Workers.diff2'](uid)).toEqual([DiffType.RenderIncremental])
   expect(commandMap['Workers.render2'](uid, [])).toEqual([])
   commandMap['Workers.dispose'](uid)
   expect(WorkersStates.get(uid)).toBeUndefined()
   expect(jest.getTimerCount()).toBe(0)
 })
 
+test('patches changed state and emits no patches when the rendered content is unchanged', async () => {
+  create()
+  const initialDiff = commandMap['Workers.diff2'](uid)
+  commandMap['Workers.render2'](uid, initialDiff)
+
+  const worker = { id: '1', memory: 1024, name: 'Editor Worker', runtimeName: 'Editor Worker [1]' }
+  const loadedState = { ...WorkersStates.get(uid).newState, loaded: true, workers: [worker] }
+  await commandMap['Workers.setComponentState'](uid, loadedState)
+  const firstUpdate = commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
+  expect(firstUpdate[0]?.[0]).toBe(ViewletCommand.SetPatches)
+  expect(firstUpdate[0]?.[2]).not.toEqual([])
+
+  await commandMap['Workers.setComponentState'](uid, loadedState)
+  const unchangedUpdate = commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
+  expect(unchangedUpdate[0]).toEqual([ViewletCommand.SetPatches, uid, []])
+
+  const changedState = {
+    ...loadedState,
+    workers: [
+      { ...worker, name: 'Renamed Worker' },
+      { ...worker, id: '2', name: 'Added Worker' },
+    ],
+  }
+  await commandMap['Workers.setComponentState'](uid, changedState)
+  const changedUpdate = commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
+  expect(changedUpdate[0]?.[0]).toBe(ViewletCommand.SetPatches)
+  expect(changedUpdate[0]?.[2]).not.toEqual([])
+
+  await commandMap['Workers.setComponentState'](uid, { ...changedState, workers: [] })
+  const removedUpdate = commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
+  expect(removedUpdate[0]?.[0]).toBe(ViewletCommand.SetPatches)
+  expect(removedUpdate[0]?.[2]).not.toEqual([])
+})
+
 test('resizes without losing loaded content', async () => {
   create()
+  commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
   const previous = { ...WorkersStates.get(uid).newState, loaded: true, workers: [{ id: '1', memory: 0, name: 'Worker', runtimeName: 'Worker [1]' }] }
   WorkersStates.set(uid, previous, previous)
   await commandMap['Workers.resize'](uid, 450, 300)
   expect(WorkersStates.get(uid).newState).toEqual({ ...previous, height: 300, width: 450 })
   expect(previous.width).toBe(200)
   const diff = commandMap['Workers.diff2'](uid)
-  expect(diff).toEqual([1, 2])
+  expect(diff).toEqual([DiffType.RenderIncremental, DiffType.RenderCss])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
-    [ViewletCommand.SetDom2, uid, expect.any(Array)],
+    [ViewletCommand.SetPatches, uid, expect.any(Array)],
     [ViewletCommand.SetCss, uid, 'width:450px;height:300px;overflow:auto;'],
   ])
-  expect(commandMap['Workers.diff2'](uid)).toEqual([1])
+  expect(commandMap['Workers.diff2'](uid)).toEqual([DiffType.RenderIncremental])
   await commandMap['Workers.resize'](uid, 450, 60)
-  expect(commandMap['Workers.diff2'](uid)).toEqual([1, 2])
+  expect(commandMap['Workers.diff2'](uid)).toEqual([DiffType.RenderIncremental, DiffType.RenderCss])
   expect(commandMap['Workers.render2'](uid, [2])).toEqual([[ViewletCommand.SetCss, uid, 'width:450px;height:60px;overflow:auto;']])
 })
 

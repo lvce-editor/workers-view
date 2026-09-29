@@ -16,6 +16,16 @@ test('gives every element a stable class in loading, populated, and empty states
   expect(everyElementHasClassName(getWorkersVirtualDom([], true, PlatformType.Electron))).toBe(true)
 })
 
+test('declares the actual number of root children in every view state', () => {
+  const states = [
+    getWorkersVirtualDom([], false, PlatformType.Web),
+    getWorkersVirtualDom([worker], true, PlatformType.Web),
+    getWorkersVirtualDom([], true, PlatformType.Web),
+    getWorkersVirtualDom([], true, PlatformType.Web, new Error('Workers unavailable')),
+  ]
+  expect(states.map(([root]) => root?.childCount)).toEqual([2, 2, 3, 4])
+})
+
 test('uses PascalCase class names for every Workers view element', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, new Error('Workers unavailable'))
   expect(nodes.map((node) => node.className)).toEqual([

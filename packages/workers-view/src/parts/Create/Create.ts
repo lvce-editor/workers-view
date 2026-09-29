@@ -14,6 +14,7 @@ export const create = (
 ): void => {
   ViewLifetime.create(uid)
   const state: WorkersState = {
+    domRendered: false,
     error: undefined,
     height,
     loaded: false,
