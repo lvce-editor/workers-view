@@ -11,20 +11,25 @@ export const test: Test = async ({ Command, expect, KeyBoard, WorkersView }) => 
   if (!workersComponent) {
     throw new Error('Expected Workers component to exist')
   }
-  const component = (await Command.execute('Workers.getComponentState')) as Record<string, unknown>
+  const component = (await Command.execute('Workers.getComponentState', workersComponent.uid)) as Record<string, unknown>
   const workers = [
     { id: 'worker-a', memory: 1, name: 'Zulu Worker', runtimeName: 'Zulu Worker' },
     { id: 'worker-b', memory: 2, name: 'Alpha Worker', runtimeName: 'Alpha Worker' },
     { id: 'worker-c', memory: 3, name: 'Mike Worker', runtimeName: 'Mike Worker' },
   ]
-  await Command.execute('Workers.setComponentState', { ...component, loaded: true, uid: workersComponent.uid, workers })
+  await Command.execute('Workers.setComponentState', {
+    ...component,
+    error: new Error('Freeze Workers e2e state'),
+    loaded: true,
+    uid: workersComponent.uid,
+    workers,
+  })
   const table = WorkersView.table()
   const rowA = table.locator('[data-worker-id="worker-a"]')
   const rowB = table.locator('[data-worker-id="worker-b"]')
   const rowC = table.locator('[data-worker-id="worker-c"]')
 
-  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Give the accessible table keyboard focus.
-  await table.click()
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '.WorkersViewTable')
   await KeyBoard.press('ArrowDown')
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowDown')

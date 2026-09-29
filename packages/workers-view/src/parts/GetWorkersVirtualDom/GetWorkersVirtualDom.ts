@@ -64,7 +64,7 @@ export const getWorkersVirtualDom = (
         contextMenuContainer,
         {
           className: 'WorkersViewContextMenuItem',
-          'data-worker-id': contextMenuWorkerId,
+          'data-workerId': contextMenuWorkerId,
           onClick: DomEventListenerFunctions.TerminateWorker,
           textContent: strings.terminateWorker(),
           type: VirtualDomElements.Button,

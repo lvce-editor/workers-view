@@ -34,7 +34,7 @@ export const getWorkerRow = (
       ariaLabel: worker.name,
       childCount: cells.length,
       className,
-      'data-worker-id': worker.id,
+      'data-workerId': worker.id,
       onClick: DomEventListenerFunctions.SelectWorker,
       onContextMenu: DomEventListenerFunctions.ShowWorkerContextMenu,
       role: AriaRoles.Row,

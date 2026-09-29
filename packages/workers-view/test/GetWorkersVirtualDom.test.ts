@@ -69,7 +69,7 @@ test('marks the selected worker and renders its right-click action', () => {
   expect(row).toMatchObject({
     'aria-selected': true,
     className: 'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowFocused',
-    'data-worker-id': worker.id,
+    'data-workerId': worker.id,
   })
   expect(nodes.some((node) => node.className === 'WorkersViewContextMenu')).toBe(true)
   expect(nodes.some((node) => node.className === 'WorkersViewContextMenuItem' && node.textContent === 'Terminate Worker')).toBe(true)
