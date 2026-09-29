@@ -4,12 +4,17 @@ export const name = 'workers-view-context-menu'
 
 export const test: Test = async ({ Command, expect, WorkersView }) => {
   await WorkersView.open()
+  const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
+  const workersComponent = components.find((component) => component.moduleId === 'Workers')
+  if (!workersComponent) {
+    throw new Error('Expected Workers component to exist')
+  }
   const component = (await Command.execute('Workers.getComponentState')) as Record<string, unknown>
   const workers = [
     { id: 'worker-one', memory: 1, name: 'One Worker', runtimeName: 'One Worker' },
     { id: 'worker-two', memory: 2, name: 'Two Worker', runtimeName: 'Two Worker' },
   ]
-  await Command.execute('Workers.setComponentState', { ...component, loaded: true, workers })
+  await Command.execute('Workers.setComponentState', { ...component, loaded: true, uid: workersComponent.uid, workers })
   const table = WorkersView.table()
   const row = table.locator('[data-worker-id="worker-two"]')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Open the row's real context menu.

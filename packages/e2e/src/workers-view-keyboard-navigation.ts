@@ -4,13 +4,18 @@ export const name = 'workers-view-keyboard-navigation'
 
 export const test: Test = async ({ Command, expect, KeyBoard, WorkersView }) => {
   await WorkersView.open()
+  const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
+  const workersComponent = components.find((component) => component.moduleId === 'Workers')
+  if (!workersComponent) {
+    throw new Error('Expected Workers component to exist')
+  }
   const component = (await Command.execute('Workers.getComponentState')) as Record<string, unknown>
   const workers = [
     { id: 'worker-a', memory: 1, name: 'Zulu Worker', runtimeName: 'Zulu Worker' },
     { id: 'worker-b', memory: 2, name: 'Alpha Worker', runtimeName: 'Alpha Worker' },
     { id: 'worker-c', memory: 3, name: 'Mike Worker', runtimeName: 'Mike Worker' },
   ]
-  await Command.execute('Workers.setComponentState', { ...component, loaded: true, workers })
+  await Command.execute('Workers.setComponentState', { ...component, loaded: true, uid: workersComponent.uid, workers })
   const table = WorkersView.table()
   const rowA = table.locator('[data-worker-id="worker-a"]')
   const rowB = table.locator('[data-worker-id="worker-b"]')
