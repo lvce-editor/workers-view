@@ -77,6 +77,15 @@ test('resizes without losing loaded content', async () => {
   expect(commandMap['Workers.render2'](uid, [2])).toEqual([[ViewletCommand.SetCss, uid, 'width:450px;height:60px;overflow:auto;']])
 })
 
+test('handles blur without changing the view state', async () => {
+  create()
+  const state = WorkersStates.get(uid).newState
+
+  await commandMap['Workers.handleBlur'](uid)
+
+  expect(WorkersStates.get(uid).newState).toBe(state)
+})
+
 test('exposes and updates the current component state', async () => {
   create()
   const state = commandMap['Workers.getComponentState'](uid)

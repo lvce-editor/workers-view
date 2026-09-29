@@ -3,6 +3,7 @@ import * as Create from '../Create/Create.ts'
 import * as Diff2 from '../Diff2/Diff2.ts'
 import * as Dispose from '../Dispose/Dispose.ts'
 import * as GetComponentState from '../GetComponentState/GetComponentState.ts'
+import * as HandleBlur from '../HandleBlur/HandleBlur.ts'
 import * as HandleMessagePort from '../HandleMessagePort/HandleMessagePort.ts'
 import * as LoadContent from '../LoadContent/LoadContent.ts'
 import * as RefreshWorkers from '../RefreshWorkers/RefreshWorkers.ts'
@@ -25,6 +26,7 @@ export const commandMap = {
   'Workers.dispose': Dispose.dispose,
   'Workers.getCommandIds': WorkersStates.getCommandIds,
   'Workers.getComponentState': GetComponentState.getComponentState,
+  'Workers.handleBlur': WorkersStates.wrapCommand(HandleBlur.handleBlur),
   'Workers.handleMessagePort': handleDirectMessagePort,
   'Workers.loadContent': WorkersStates.wrapCommand(LoadContent.loadContent),
   'Workers.refresh': WorkersStates.wrapCommand(RefreshWorkers.refresh),
