@@ -13,5 +13,8 @@ export const renderDom = (_oldState: WorkersState, newState: WorkersState): read
     undefined,
     newState.sortColumn,
     newState.sortDirection,
+    newState.selectedWorkerId,
+    newState.contextMenuWorkerId,
+    newState.hasFocus,
   ),
 ]
