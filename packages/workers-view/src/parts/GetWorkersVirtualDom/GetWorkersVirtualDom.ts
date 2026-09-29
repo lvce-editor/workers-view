@@ -73,9 +73,21 @@ export const getWorkersVirtualDom = (
     : []
   const errorDom = getError(error)
   const emptyDom = GetEmptyState.getEmptyState(workers, loaded, strings)
-  const children = [title, ...errorDom, table, { ...headerRow, childCount: showMemory ? 2 : 1 }, ...columns, ...rows, ...emptyDom, ...contextMenu]
-  return [
-    { childCount: 2 + errorDom.length + emptyDom.length + contextMenu.length, className: 'WorkersView', type: VirtualDomElements.Div },
-    ...children,
+  const tableContainer = {
+    childCount: 1 + emptyDom.length,
+    className: 'WorkersViewTableContainer',
+    type: VirtualDomElements.Div,
+  }
+  const children = [
+    title,
+    ...errorDom,
+    tableContainer,
+    table,
+    { ...headerRow, childCount: showMemory ? 2 : 1 },
+    ...columns,
+    ...rows,
+    ...emptyDom,
+    ...contextMenu,
   ]
+  return [{ childCount: 2 + errorDom.length + Number(contextMenu.length > 0), className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }

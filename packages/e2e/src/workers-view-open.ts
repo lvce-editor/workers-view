@@ -10,6 +10,8 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   await expect(view).toBeVisible()
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
+  const tableInContainer = view.locator('.WorkersViewTableContainer > .WorkersViewTable')
+  await expect(tableInContainer).toHaveCount(1)
   await expect(nameHeader).toHaveAttribute('aria-sort', 'none')
   await expect(WorkersView.nameHeaderButton()).toHaveText('Name')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify the real Name header control toggles sorting.
