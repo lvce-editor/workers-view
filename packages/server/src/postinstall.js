@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -30,3 +30,7 @@ const workersViewWorkerUrl = \`${remoteUrl}\``
     await writeFile(rendererWorkerMainPath, newContent)
   }
 }
+
+const testWorkerPath = join(nodeModulesPath, '@lvce-editor', 'test-worker', 'dist', 'testWorkerMain.js')
+const staticTestWorkerPath = join(serverStaticPath, commitHash, 'packages', 'test-worker', 'dist', 'testWorkerMain.js')
+await copyFile(testWorkerPath, staticTestWorkerPath)
