@@ -65,6 +65,16 @@ test('resizes without losing loaded content', async () => {
   await commandMap['Workers.resize'](uid, 450, 300)
   expect(WorkersStates.get(uid).newState).toEqual({ ...previous, height: 300, width: 450 })
   expect(previous.width).toBe(200)
+  const diff = commandMap['Workers.diff2'](uid)
+  expect(diff).toEqual([1, 2])
+  expect(commandMap['Workers.render2'](uid, diff)).toEqual([
+    [ViewletCommand.SetDom2, uid, expect.any(Array)],
+    [ViewletCommand.SetCss, uid, 'width:450px;height:300px;overflow:auto;'],
+  ])
+  expect(commandMap['Workers.diff2'](uid)).toEqual([1])
+  await commandMap['Workers.resize'](uid, 450, 60)
+  expect(commandMap['Workers.diff2'](uid)).toEqual([1, 2])
+  expect(commandMap['Workers.render2'](uid, [2])).toEqual([[ViewletCommand.SetCss, uid, 'width:450px;height:60px;overflow:auto;']])
 })
 
 test('exposes and updates the current component state', async () => {
