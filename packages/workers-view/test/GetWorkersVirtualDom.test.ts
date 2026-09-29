@@ -8,6 +8,29 @@ const everyElementHasClassName = (nodes: ReturnType<typeof getWorkersVirtualDom>
   return nodes.every((node) => typeof node.className === 'string' && node.className.length > 0)
 }
 
+const getSubtreeEnd = (nodes: ReturnType<typeof getWorkersVirtualDom>, index: number): number => {
+  let cursor = index + 1
+  for (let child = 0; child < (nodes[index]?.childCount ?? 0); child++) {
+    cursor = getSubtreeEnd(nodes, cursor)
+  }
+  return cursor
+}
+
+const getDirectChildren = (nodes: ReturnType<typeof getWorkersVirtualDom>, className: string): ReturnType<typeof getWorkersVirtualDom>[number][] => {
+  const parentIndex = nodes.findIndex((node) => node.className?.split(' ').includes(className))
+  if (parentIndex === -1) {
+    return []
+  }
+  const children = []
+  let cursor = parentIndex + 1
+  const end = getSubtreeEnd(nodes, parentIndex)
+  while (cursor < end) {
+    children.push(nodes[cursor])
+    cursor = getSubtreeEnd(nodes, cursor)
+  }
+  return children
+}
+
 test('gives every element a stable class in loading, populated, and empty states', () => {
   expect(everyElementHasClassName(getWorkersVirtualDom([], false, PlatformType.Web))).toBe(true)
   expect(everyElementHasClassName(getWorkersVirtualDom([worker], true, PlatformType.Web))).toBe(true)
@@ -23,7 +46,40 @@ test('declares the actual number of root children in every view state', () => {
     getWorkersVirtualDom([], true, PlatformType.Web),
     getWorkersVirtualDom([], true, PlatformType.Web, new Error('Workers unavailable')),
   ]
-  expect(states.map(([root]) => root?.childCount)).toEqual([2, 2, 3, 4])
+  expect(states.map(([root]) => root?.childCount)).toEqual([2, 2, 2, 3])
+})
+
+test('wraps the table and empty state while keeping errors and context menu at the view level', () => {
+  const nodes = getWorkersVirtualDom(
+    [worker],
+    true,
+    PlatformType.Electron,
+    new Error('Workers unavailable'),
+    undefined,
+    undefined,
+    undefined,
+    worker.id,
+    worker.id,
+  )
+  expect(getDirectChildren(nodes, 'WorkersView').map((node) => node.className)).toEqual([
+    'WorkersViewTitle',
+    'WorkersViewError',
+    'WorkersViewTableContainer',
+    'WorkersViewContextMenu',
+  ])
+  expect(getDirectChildren(nodes, 'WorkersViewTableContainer').map((node) => node.className)).toEqual(['WorkersViewTable'])
+  const tableChildren = getDirectChildren(nodes, 'WorkersViewTable')
+  expect(tableChildren.map((node) => node.className)).toEqual([
+    'WorkersViewTableHeaderRow',
+    'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowBlurred',
+  ])
+  expect(getDirectChildren(nodes, 'WorkersViewWorkerRow').map((node) => node.className)).toEqual(['WorkersViewWorkerCell', 'WorkersViewWorkerCell'])
+
+  const emptyNodes = getWorkersVirtualDom([], true, PlatformType.Web)
+  expect(getDirectChildren(emptyNodes, 'WorkersViewTableContainer').map((node) => node.className)).toEqual([
+    'WorkersViewTable',
+    'WorkersViewEmptyState',
+  ])
 })
 
 test('uses PascalCase class names for every Workers view element', () => {
@@ -32,6 +88,7 @@ test('uses PascalCase class names for every Workers view element', () => {
     'WorkersView',
     'WorkersViewTitle',
     'WorkersViewError',
+    'WorkersViewTableContainer',
     'WorkersViewTable',
     'WorkersViewTableHeaderRow',
     'WorkersViewTableHeaderCell',
@@ -104,7 +161,7 @@ test('uses the existing English strings by default', () => {
   expect(nodes.some((node) => node.textContent === 'Name')).toBe(true)
   expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(true)
   expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
-  expect(nodes[2]?.ariaLabel).toBe('Workers')
+  expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe('Workers')
   expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.textContent === 'No workers are running.')).toBe(true)
 })
 
@@ -122,7 +179,7 @@ test('uses substituted strings in labels, empty state, and the table accessible 
   expect(nodes.some((node) => node.textContent === 'translated name')).toBe(true)
   expect(nodes.some((node) => node.textContent === 'translated heap')).toBe(true)
   expect(nodes.some((node) => node.textContent === 'translated unavailable')).toBe(true)
-  expect(nodes[2]?.ariaLabel).toBe('translated workers')
+  expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe('translated workers')
   expect(getWorkersVirtualDom([], true, PlatformType.Web, undefined, strings).some((node) => node.textContent === 'translated empty state')).toBe(
     true,
   )
