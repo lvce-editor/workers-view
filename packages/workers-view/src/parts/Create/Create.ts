@@ -16,6 +16,7 @@ export const create = (
   const state: WorkersState = {
     domRendered: false,
     error: undefined,
+    hasFocus: false,
     height,
     loaded: false,
     platform,

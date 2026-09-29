@@ -63,6 +63,18 @@ test('renders sortable headers and exposes the selected sort direction', () => {
   expect(nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton').map((button) => button.onClick)).toEqual([2, 3])
 })
 
+test('marks the selected worker and renders its right-click action', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, undefined, undefined, worker.id, worker.id, true)
+  const row = nodes.find((node) => node.className?.includes('WorkersViewWorkerRow'))
+  expect(row).toMatchObject({
+    'aria-selected': true,
+    className: 'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowFocused',
+    'data-workerId': worker.id,
+  })
+  expect(nodes.some((node) => node.className === 'WorkersViewContextMenu')).toBe(true)
+  expect(nodes.some((node) => node.className === 'WorkersViewContextMenuItem' && node.textContent === 'Terminate Worker')).toBe(true)
+})
+
 test('shows only worker names outside Electron', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Web)
   expect(nodes.some((node) => node.textContent === 'Editor Worker')).toBe(true)
@@ -101,6 +113,7 @@ test('uses substituted strings in labels, empty state, and the table accessible 
     javaScriptHeapUsed: (): string => 'translated heap',
     name: (): string => 'translated name',
     noWorkersAreRunning: (): string => 'translated empty state',
+    terminateWorker: (): string => 'translated terminate',
     unavailable: (): string => 'translated unavailable',
     workers: (): string => 'translated workers',
   }

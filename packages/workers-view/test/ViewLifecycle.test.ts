@@ -24,6 +24,7 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
   expect(newState).toEqual({
     domRendered: false,
     error: undefined,
+    hasFocus: false,
     height: 100,
     loaded: false,
     platform: PlatformType.Web,
@@ -122,13 +123,14 @@ test('resizes without losing loaded content', async () => {
   expect(commandMap['Workers.render2'](uid, [2])).toEqual([[ViewletCommand.SetCss, uid, 'width:450px;height:60px;overflow:auto;']])
 })
 
-test('handles blur without changing the view state', async () => {
+test('clears focused selection styling on blur', async () => {
   create()
-  const state = WorkersStates.get(uid).newState
+  const state = { ...WorkersStates.get(uid).newState, hasFocus: true, selectedWorkerId: 'worker-1' }
+  WorkersStates.set(uid, state, state)
 
   await commandMap['Workers.handleBlur'](uid)
 
-  expect(WorkersStates.get(uid).newState).toBe(state)
+  expect(WorkersStates.get(uid).newState).toEqual({ ...state, hasFocus: false })
 })
 
 test('exposes and updates the current component state', async () => {
@@ -197,6 +199,41 @@ test('refresh preserves a sort selection made while worker data is loading', asy
   expect(newState.workers.map((worker) => worker.name)).toEqual(['Alpha', 'Zulu'])
 })
 
+test('refresh preserves a selected worker and its menu by stable id', async () => {
+  const workers = [
+    { id: 'worker-a', name: 'Alpha', runtimeName: 'Alpha' },
+    { id: 'worker-b', name: 'Beta', runtimeName: 'Beta' },
+  ]
+  RendererProcess.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => workers } }))
+  create()
+  const initial = {
+    ...WorkersStates.get(uid).newState,
+    contextMenuWorkerId: 'worker-b',
+    hasFocus: true,
+    selectedWorkerId: 'worker-b',
+  }
+  await commandMap['Workers.setComponentState'](uid, initial)
+  await commandMap['Workers.refresh'](uid)
+  expect(WorkersStates.get(uid).newState).toMatchObject({
+    contextMenuWorkerId: 'worker-b',
+    hasFocus: true,
+    selectedWorkerId: 'worker-b',
+  })
+})
+
+test('refresh falls back to the first remaining worker when selection disappears', async () => {
+  RendererProcess.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => [{ id: 'worker-a', name: 'Alpha', runtimeName: 'Alpha' }] } }))
+  create()
+  const initial = {
+    ...WorkersStates.get(uid).newState,
+    contextMenuWorkerId: 'worker-b',
+    selectedWorkerId: 'worker-b',
+  }
+  await commandMap['Workers.setComponentState'](uid, initial)
+  await commandMap['Workers.refresh'](uid)
+  expect(WorkersStates.get(uid).newState).toMatchObject({ contextMenuWorkerId: undefined, selectedWorkerId: 'worker-a' })
+})
+
 test('sorts memory by default in descending order when its header command is selected', async () => {
   create()
   await commandMap['Workers.sortByMemory'](uid)
@@ -207,6 +244,15 @@ test('sorts memory by default in descending order when its header command is sel
 
 test('registers the sort event handlers without a refresh button handler', () => {
   expect(commandMap['Workers.renderEventListeners']()).toEqual([
+    { name: 4, params: ['selectWorker', 'event.currentTarget.dataset.workerId'], preventDefault: true },
+    { name: 5, params: ['navigateWorkers', 'event.key'], preventDefault: false },
+    { name: 8, params: ['focusWorkers'], preventDefault: true },
+    {
+      name: 6,
+      params: ['showWorkerContextMenu', 'event.currentTarget.dataset.workerId'],
+      preventDefault: true,
+    },
+    { name: 7, params: ['terminateWorker', 'event.currentTarget.dataset.workerId'], preventDefault: true },
     { name: 2, params: ['sortByName'], preventDefault: true },
     { name: 3, params: ['sortByMemory'], preventDefault: true },
   ])

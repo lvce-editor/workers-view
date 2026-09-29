@@ -14,9 +14,19 @@ export const refresh = async (state: WorkersState): Promise<WorkersState> => {
     getWorkers: () => RendererProcess.invoke('Workers.getWorkers'),
   })
   const latestState = WorkersStates.get(uid)?.newState || state
-  const { sortColumn, sortDirection } = latestState
+  const { selectedWorkerId, sortColumn, sortDirection } = latestState
+  const selectedWorkerExists = refreshedState.workers.some((worker) => worker.id === selectedWorkerId)
+  let nextSelectedWorkerId = selectedWorkerId
+  if (!selectedWorkerExists && selectedWorkerId) {
+    nextSelectedWorkerId = refreshedState.workers[0]?.id
+  }
   return {
     ...refreshedState,
+    contextMenuWorkerId: refreshedState.workers.some((worker) => worker.id === latestState.contextMenuWorkerId)
+      ? latestState.contextMenuWorkerId
+      : undefined,
+    hasFocus: latestState.hasFocus,
+    selectedWorkerId: nextSelectedWorkerId,
     sortColumn,
     sortDirection,
     workers: SortWorkers.sortWorkers(refreshedState.workers, sortColumn, sortDirection),
