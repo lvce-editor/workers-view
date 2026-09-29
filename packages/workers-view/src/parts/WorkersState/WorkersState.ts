@@ -12,6 +12,7 @@ export type SortColumn = 'memory' | 'name'
 export type SortDirection = 'ascending' | 'descending'
 
 export interface WorkersState {
+  readonly domRendered?: boolean
   readonly error: Error | undefined
   readonly height: number
   readonly loaded: boolean

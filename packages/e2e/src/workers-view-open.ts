@@ -37,6 +37,16 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   await Command.execute('Workers.resize', 800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   await expect(workerRows).toHaveCount(40)
+  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
+  await expect(WorkersView.heading()).toHaveText('Workers')
+  await expect(WorkersView.table()).toBeVisible()
+  const changedWorkers = workers.map((worker: Readonly<(typeof workers)[number]>, index) =>
+    index === 0 ? { ...worker, name: 'Updated Worker' } : worker,
+  )
+  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers: changedWorkers })
+  await expect(workerRows.first()).toContainText('Updated Worker')
+  await expect(WorkersView.heading()).toHaveText('Workers')
+  await expect(WorkersView.table()).toBeVisible()
   await Command.execute('Workers.resize', 800, 800)
 
   await Main.closeActiveEditor()
