@@ -4,6 +4,8 @@ export const name = 'workers-view-context-menu'
 
 export const test: Test = async ({ Command, expect, WorkersView }) => {
   await WorkersView.open()
+  await expect(WorkersView.root()).toBeVisible()
+  await expect(WorkersView.table()).toBeVisible()
   const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
   const workersComponent = components.find((component) => component.moduleId === 'Workers')
   if (!workersComponent) {
