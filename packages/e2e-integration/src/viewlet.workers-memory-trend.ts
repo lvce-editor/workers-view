@@ -35,12 +35,12 @@ export const test: Test = async ({ Command, expect, Locator, QuickPick }) => {
 
   await Command.execute('Preferences.update', { [preference]: true })
   await Command.execute('Workers.refresh', component.uid)
-  const state = (await Command.execute('Workers.getComponentState', component.uid)) as WorkersState
+  const state = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
   const { workers } = state
   const worker = workers.find((item) => typeof item.memory === 'number' && item.memory > 1000)
   if (!worker || worker.memory === null) throw new Error('Expected an Electron worker with a readable heap measurement')
 
-  await Command.execute('Workers.setComponentState', {
+  await Command.execute('ComponentState.setState', component.uid, {
     ...state,
     memorySamples: [{ id: worker.id, memory: worker.memory - 1000, timestamp: Date.now() - 10_000 }],
   })
@@ -52,6 +52,6 @@ export const test: Test = async ({ Command, expect, Locator, QuickPick }) => {
   await Command.execute('Preferences.update', { [preference]: false })
   await Command.execute('Workers.refresh', component.uid)
   await expect(Locator('.WorkersViewMemoryTrend')).toHaveCount(0)
-  const disabledState = (await Command.execute('Workers.getComponentState', component.uid)) as WorkersState
+  const disabledState = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
   expect(disabledState.memorySamples).toEqual([])
 }
