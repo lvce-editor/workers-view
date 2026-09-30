@@ -17,8 +17,8 @@ interface Connection {
   readonly port: MessagePort
   readonly remotePort: MessagePort
   rpc?: Promise<Rpc>
-  readonly sessions: Record<string, Session>
   readonly sessionOrder: string[]
+  readonly sessions: Record<string, Session>
 }
 
 const createDictionary = <T>(): Record<string, T> => Object.create(null) as Record<string, T>
@@ -56,8 +56,8 @@ const create = (uid: number): Connection => {
     controller: new AbortController(),
     port: port1,
     remotePort: port2,
-    sessions: createDictionary(),
     sessionOrder: [],
+    sessions: createDictionary(),
   }
   connections[uid] = connection
   port1.addEventListener(
@@ -80,11 +80,8 @@ const synchronizeSessions = async (connection: Connection, invoke: Invoke): Prom
   for (const targetId of targetIds) targets[targetId] = true
   const removed: string[] = []
   for (const targetId of connection.sessionOrder) {
+    if (Object.hasOwn(targets, targetId)) continue
     const session = connection.sessions[targetId]
-    if (Object.hasOwn(targets, targetId)) {
-      continue
-    }
-
     delete connection.sessions[targetId]
     removed.push(session.sessionId)
   }
@@ -95,10 +92,9 @@ const synchronizeSessions = async (connection: Connection, invoke: Invoke): Prom
   if (added.length > 0) {
     const sessions = await invoke<readonly (Session | null)[]>('WorkerMemory.attach', added)
     for (const session of sessions) {
-      if (session) {
-        if (!Object.hasOwn(connection.sessions, session.targetId)) connection.sessionOrder.push(session.targetId)
-        connection.sessions[session.targetId] = session
-      }
+      if (!session) continue
+      if (!Object.hasOwn(connection.sessions, session.targetId)) connection.sessionOrder.push(session.targetId)
+      connection.sessions[session.targetId] = session
     }
   }
 }

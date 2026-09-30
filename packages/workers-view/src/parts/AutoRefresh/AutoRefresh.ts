@@ -12,7 +12,7 @@ const update = async (uid: number): Promise<void> => {
     console.error(error)
   } finally {
     const pendingIndex = pending.indexOf(uid)
-    if (pendingIndex >= 0) pending.splice(pendingIndex, 1)
+    if (pendingIndex !== -1) pending.splice(pendingIndex, 1)
   }
 }
 
@@ -26,5 +26,5 @@ export const dispose = (uid: number): void => {
   if (Object.hasOwn(intervals, uid)) clearInterval(interval)
   delete intervals[uid]
   const pendingIndex = pending.indexOf(uid)
-  if (pendingIndex >= 0) pending.splice(pendingIndex, 1)
+  if (pendingIndex !== -1) pending.splice(pendingIndex, 1)
 }
