@@ -10,7 +10,6 @@ export const renderDom = (_oldState: WorkersState, newState: WorkersState): read
     newState.loaded,
     newState.platform,
     newState.error,
-    undefined,
     newState.sortColumn,
     newState.sortDirection,
     newState.selectedWorkerId,
