@@ -120,7 +120,7 @@ test('renders sortable headers and exposes the selected sort direction', () => {
   expect(buttons.map((button) => button.onClick)).toEqual([undefined, undefined])
   expect(buttons.map((button) => button.onKeyDown)).toEqual([11, 11])
   expect(buttons.map((button) => button['data-sortColumn'])).toEqual(['name', 'memory'])
-  expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([undefined])
+  expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([12])
 })
 
 test('marks the selected worker and renders its right-click action', () => {

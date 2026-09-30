@@ -37,4 +37,10 @@ export const renderEventListeners = (): readonly any[] => [
     preventDefault: true,
     stopPropagation: true,
   },
+  {
+    name: DomEventListenerFunctions.SelectWorker,
+    params: ['selectWorker', 'event.currentTarget.dataset.workerId'],
+    preventDefault: true,
+    stopPropagation: true,
+  },
 ]
