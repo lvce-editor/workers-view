@@ -28,6 +28,7 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
     hasFocus: false,
     height: 100,
     loaded: false,
+    memorySamples: [],
     platform: PlatformType.Web,
     scrollTop: 0,
     selectedWorkerId: undefined,

@@ -8,3 +8,5 @@ export const unavailable = (): string => I18nString.i18nString(UiStrings.Unavail
 export const noWorkersAreRunning = (): string => I18nString.i18nString(UiStrings.NoWorkersAreRunning)
 export const terminateWorker = (): string => I18nString.i18nString(UiStrings.TerminateWorker)
 export const takeHeapSnapshot = (): string => I18nString.i18nString(UiStrings.TakeHeapSnapshot)
+export const memoryGrowing = (rate: string): string => `${I18nString.i18nString(UiStrings.MemoryGrowing)} ${rate}`
+export const memoryShrinking = (rate: string): string => `${I18nString.i18nString(UiStrings.MemoryShrinking)} ${rate}`
