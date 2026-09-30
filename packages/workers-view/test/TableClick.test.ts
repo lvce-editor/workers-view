@@ -11,11 +11,15 @@ const workers = [
 ]
 
 const state = {
+  contextMenuWorkerId: undefined,
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 200,
   loaded: true,
   platform: PlatformType.Electron,
   scrollTop: 0,
+  selectedWorkerId: undefined,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,
