@@ -23,3 +23,8 @@ export const navigateWorkers = (state: WorkersState, key: string): WorkersState 
   }
   return { ...state, hasFocus: true, selectedWorkerId: workers[nextIndex].id }
 }
+
+export const focusNext = (state: WorkersState): WorkersState => navigateWorkers(state, 'ArrowDown')
+export const focusPrevious = (state: WorkersState): WorkersState => navigateWorkers(state, 'ArrowUp')
+export const focusFirst = (state: WorkersState): WorkersState => navigateWorkers(state, 'Home')
+export const focusLast = (state: WorkersState): WorkersState => navigateWorkers(state, 'End')

@@ -1,6 +1,7 @@
 import * as DiffType from '../DiffType/DiffType.ts'
 import * as RenderCss from '../RenderCss/RenderCss.ts'
 import * as RenderDom from '../RenderDom/RenderDom.ts'
+import * as RenderFocusContext from '../RenderFocusContext/RenderFocusContext.ts'
 import * as RenderIncremental from '../RenderIncremental/RenderIncremental.ts'
 import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
@@ -12,6 +13,7 @@ export const render2 = (uid: number, diffTypes: readonly number[]): readonly any
   return diffTypes.map((diffType) => {
     if (diffType === DiffType.RenderCss) return RenderCss.renderCss(oldState, newState)
     if (diffType === DiffType.RenderIncremental) return RenderIncremental.renderIncremental(oldState, newState)
+    if (diffType === DiffType.RenderFocusContext) return RenderFocusContext.renderFocusContext(oldState, newState)
     return RenderDom.renderDom(oldState, newState)
   })
 }

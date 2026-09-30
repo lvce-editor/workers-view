@@ -54,4 +54,8 @@ export const test: Test = async ({ Command, expect, KeyBoard, WorkersView }) => 
   await WorkersView.nameHeaderButton().click()
   const sortedRowB = table.locator('[data-worker-id="worker-b"]')
   await expect(sortedRowB).toHaveAttribute('aria-selected', 'true')
+
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '.WorkersViewTableHeaderButton')
+  await KeyBoard.press('ArrowUp')
+  await expect(sortedRowB).toHaveAttribute('aria-selected', 'true')
 }
