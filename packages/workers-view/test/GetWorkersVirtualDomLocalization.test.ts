@@ -7,9 +7,9 @@ test('uses WorkersViewStrings for worker labels, memory, empty state, and the co
   const worker = { id: 'worker-1', memory: null, name: 'Editor Worker', runtimeName: 'Editor Worker [worker-1]' }
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, undefined, worker.id, worker.id)
 
-  expect(nodes.some((node) => node.textContent === WorkersViewStrings.workers())).toBe(true)
+  expect(nodes.some((node) => node.textContent === WorkersViewStrings.workers())).toBe(false)
   expect(nodes.some((node) => node.textContent === WorkersViewStrings.name())).toBe(true)
-  expect(nodes.some((node) => node.textContent === WorkersViewStrings.javaScriptHeapUsed())).toBe(true)
+  expect(nodes.some((node) => node.textContent === WorkersViewStrings.heapUse())).toBe(true)
   expect(nodes.some((node) => node.textContent === WorkersViewStrings.unavailable())).toBe(true)
   expect(nodes.some((node) => node.textContent === WorkersViewStrings.terminateWorker())).toBe(true)
   expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe(WorkersViewStrings.workers())

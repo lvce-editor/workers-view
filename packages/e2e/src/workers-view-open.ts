@@ -6,9 +6,10 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await WorkersView.open()
 
   const view = WorkersView.root()
+  const heading = WorkersView.heading()
   const nameHeader = WorkersView.nameHeader()
   await expect(view).toBeVisible()
-  await expect(WorkersView.heading()).toHaveText('Workers')
+  await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()
   const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
   const workersComponent = components.find((component) => component.moduleId === 'Workers')
@@ -59,21 +60,21 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   await expect(workerRows).toHaveCount(40)
   await Command.execute('Workers.setComponentState', workersState)
-  await expect(WorkersView.heading()).toHaveText('Workers')
+  await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()
   const changedWorkers = workers.map((worker: Readonly<(typeof workers)[number]>, index) =>
     index === 0 ? { ...worker, name: 'Updated Worker' } : worker,
   )
   await Command.execute('Workers.setComponentState', { ...workersState, workers: changedWorkers })
   await expect(workerRows.first()).toContainText('Updated Worker')
-  await expect(WorkersView.heading()).toHaveText('Workers')
+  await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()
   await WorkersView.resize(800, 800)
 
   await Main.closeActiveEditor()
   await WorkersView.open()
   await expect(WorkersView.root()).toBeVisible()
-  await expect(WorkersView.heading()).toHaveText('Workers')
+  await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()
   await WorkersView.setError(new Error('Workers view e2e error'))
   const alert = WorkersView.error()
