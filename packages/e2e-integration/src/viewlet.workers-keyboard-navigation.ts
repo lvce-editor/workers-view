@@ -22,20 +22,6 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   }
   const state = (await Command.execute('Workers.getComponentState', component.uid)) as Record<string, unknown>
 
-  await Command.execute('Workers.setComponentState', {
-    ...state,
-    error: new Error('Freeze Workers keyboard e2e state'),
-    loaded: true,
-    uid: component.uid,
-    workers: [],
-  })
-  await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTable')
-  await KeyBoard.press('ArrowDown')
-  await KeyBoard.press('ArrowUp')
-  await KeyBoard.press('Home')
-  await KeyBoard.press('End')
-  await expect(table.locator('.WorkersViewWorkerRow')).toHaveCount(0)
-
   const workers = [
     { id: 'worker-a', memory: 1, name: 'Zulu Worker', runtimeName: 'Zulu Worker' },
     { id: 'worker-b', memory: 2, name: 'Alpha Worker', runtimeName: 'Alpha Worker' },
@@ -45,6 +31,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
     ...state,
     error: new Error('Freeze Workers keyboard e2e state'),
     loaded: true,
+    selectedWorkerId: 'worker-a',
     uid: component.uid,
     workers,
   })
@@ -53,15 +40,19 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   const rowB = table.locator('[data-worker-id="worker-b"]')
   const rowC = table.locator('[data-worker-id="worker-c"]')
   await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTable')
-  await KeyBoard.press('ArrowDown')
-  await expect(rowA).toHaveAttribute('aria-selected', 'true')
+  await expect(Locator(':focus')).toHaveAttribute('class', 'WorkersViewTable')
+  await expect(rowA).toHaveAttribute('class', 'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowFocused')
   await KeyBoard.press('ArrowDown')
   await expect(rowB).toHaveAttribute('aria-selected', 'true')
   await expect(rowA).toHaveAttribute('aria-selected', 'false')
+  await KeyBoard.press('ArrowDown')
+  await expect(rowC).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('Home')
+  await expect(rowA).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowUp')
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('End')
+  await expect(rowC).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowDown')
   await expect(rowC).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowUp')
@@ -77,6 +68,22 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
 
   await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTableHeaderButton')
-  await KeyBoard.press('ArrowUp')
+  await expect(Locator(':focus')).toHaveAttribute('class', 'WorkersViewTableHeaderButton')
+  await KeyBoard.press('ArrowDown')
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
+
+  await Command.execute('Workers.setComponentState', {
+    ...state,
+    error: new Error('Freeze Workers keyboard e2e state'),
+    loaded: true,
+    uid: component.uid,
+    workers: [],
+  })
+  await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTable')
+  await expect(Locator(':focus')).toHaveAttribute('class', 'WorkersViewTable')
+  await KeyBoard.press('ArrowDown')
+  await KeyBoard.press('ArrowUp')
+  await KeyBoard.press('Home')
+  await KeyBoard.press('End')
+  await expect(table.locator('.WorkersViewWorkerRow')).toHaveCount(0)
 }
