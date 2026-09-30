@@ -50,15 +50,7 @@ test('declares the actual number of root children in every view state', () => {
 })
 
 test('wraps the table and empty state while keeping errors at the view level', () => {
-  const nodes = getWorkersVirtualDom(
-    [worker],
-    true,
-    PlatformType.Electron,
-    new Error('Workers unavailable'),
-    undefined,
-    undefined,
-    worker.id,
-  )
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, new Error('Workers unavailable'), undefined, undefined, worker.id)
   expect(getDirectChildren(nodes, 'WorkersView').map((node) => node.className)).toEqual(['WorkersViewError', 'WorkersViewTableContainer'])
   expect(getDirectChildren(nodes, 'WorkersViewTableContainer').map((node) => node.className)).toEqual(['WorkersViewTable'])
   const tableChildren = getDirectChildren(nodes, 'WorkersViewTable')

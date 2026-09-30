@@ -28,7 +28,7 @@ export const test: Test = async ({ Command, ContextMenu, expect, WorkersView }) 
   const row = table.locator('[data-worker-id="worker-two"]')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Open the row's real context menu.
   await row.click({ button: 'right' })
-  const terminate = WorkersView.root().locator('.MenuItem', { hasText: 'Terminate Worker' })
+  const terminate = WorkersView.root().locator('.MenuItem:has-text("Terminate Worker")')
   await expect(terminate).toBeVisible()
   await expect(row).toHaveAttribute('aria-selected', 'true')
   await ContextMenu.selectItem('Terminate Worker')

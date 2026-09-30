@@ -49,14 +49,6 @@ export const getWorkersVirtualDom = (
     onScroll: DomEventListenerFunctions.ScrollWorkers,
     type: VirtualDomElements.Div,
   }
-  const children = [
-    ...errorDom,
-    tableContainer,
-    table,
-    { ...headerRow, childCount: showMemory ? 2 : 1 },
-    ...columns,
-    ...rows,
-    ...emptyDom,
-  ]
+  const children = [...errorDom, tableContainer, table, { ...headerRow, childCount: showMemory ? 2 : 1 }, ...columns, ...rows, ...emptyDom]
   return [{ childCount: 1 + errorDom.length, className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }

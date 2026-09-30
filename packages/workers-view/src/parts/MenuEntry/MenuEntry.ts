@@ -1,9 +1,7 @@
-import type { MenuItemFlags } from '@lvce-editor/constants'
-
 export interface MenuEntry {
   readonly args: readonly unknown[]
   readonly command: string
-  readonly flags: MenuItemFlags
+  readonly flags: number
   readonly id: string
   readonly label: string
 }

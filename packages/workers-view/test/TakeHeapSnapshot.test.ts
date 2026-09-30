@@ -24,9 +24,9 @@ const state: WorkersState = {
 }
 
 test('takes a snapshot of the selected worker and opens the returned URI', async () => {
-  const takeSnapshot = jest.fn(async () => 'file:///worker.heapsnapshot')
-  const getWindowId = jest.fn(async () => 7)
-  const openUri = jest.fn(async () => {})
+  const takeSnapshot = jest.fn<(...args: readonly unknown[]) => Promise<string>>(async () => 'file:///worker.heapsnapshot')
+  const getWindowId = jest.fn<(...args: readonly unknown[]) => Promise<number>>(async () => 7)
+  const openUri = jest.fn<(...args: readonly unknown[]) => Promise<void>>(async () => {})
   MainProcess.registerMockRpc({ 'ElectronDeveloper.takeWorkerHeapSnapshot': takeSnapshot })
   RendererWorker.registerMockRpc({ 'GetWindowId.getWindowId': getWindowId, 'Main.openUri': openUri })
   await takeHeapSnapshot(state, worker.id)
