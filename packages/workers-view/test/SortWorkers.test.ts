@@ -18,12 +18,15 @@ const state: WorkersState = {
   height: 100,
   loaded: true,
   platform: 1,
-  selectedWorkerId: undefined,
+    selectedWorkerId: undefined,
+  scrollTop: 0,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,
   width: 200,
   workers,
+  x: 0,
+  y: 0,
 }
 
 test('sorts memory by raw bytes, keeps unavailable values last and uses name for ties', () => {
