@@ -35,7 +35,7 @@ export const test: Test = async ({ Command, expect, Locator, QuickPick }) => {
   await Command.execute('Workers.refresh', component.uid)
   const state = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
   const { workers } = state
-  expect(workers.every((item) => item.memory === null)).toBe(true)
+  if (workers.some((item) => item.memory !== null)) throw new Error('Expected browser workers to have unavailable memory measurements')
   await Command.execute('ComponentState.setState', component.uid, {
     ...state,
     memorySamples: [{ id: 'stale-worker', memory: 1000, timestamp: Date.now() - 10_000 }],
@@ -43,11 +43,11 @@ export const test: Test = async ({ Command, expect, Locator, QuickPick }) => {
   await Command.execute('Workers.refresh', component.uid)
   await expect(Locator('.WorkersViewMemoryTrend')).toHaveCount(0)
   const unavailableState = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
-  expect(unavailableState.memorySamples).toEqual([])
+  if (unavailableState.memorySamples.length > 0) throw new Error('Expected unavailable memory to clear trend history')
 
   await Command.execute('Preferences.update', { [preference]: false })
   await Command.execute('Workers.refresh', component.uid)
   await expect(Locator('.WorkersViewMemoryTrend')).toHaveCount(0)
   const disabledState = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
-  expect(disabledState.memorySamples).toEqual([])
+  if (disabledState.memorySamples.length > 0) throw new Error('Expected disabling trends to clear trend history')
 }
