@@ -6,6 +6,16 @@ export interface TrackedWorker {
 
 export interface DisplayedWorker extends TrackedWorker {
   readonly memory: number | null
+  readonly memoryTrend?: {
+    readonly direction: 'growing' | 'shrinking'
+    readonly bytesPerSecond: number
+  }
+}
+
+export interface MemorySample {
+  readonly id: string
+  readonly memory: number
+  readonly timestamp: number
 }
 
 export type SortColumn = 'memory' | 'name'
@@ -17,6 +27,7 @@ export interface WorkersState {
   readonly hasFocus: boolean
   readonly height: number
   readonly loaded: boolean
+  readonly memorySamples?: readonly MemorySample[]
   readonly platform: number
   readonly scrollTop: number
   readonly selectedWorkerId: string | undefined

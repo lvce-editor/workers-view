@@ -10,6 +10,7 @@ export const create = (uid: number, _uri: string, x: number, y: number, width: n
     hasFocus: false,
     height,
     loaded: false,
+    memorySamples: [],
     platform,
     scrollTop: 0,
     selectedWorkerId: undefined,

@@ -97,6 +97,24 @@ test('formats worker memory in Electron', () => {
   expect(nodes.some((node) => node.textContent === '1.0 KiB')).toBe(true)
 })
 
+test('renders accessible red growth and green shrinkage rates beside heap usage', () => {
+  const growing = getWorkersVirtualDom([{ ...worker, memoryTrend: { bytesPerSecond: 2100, direction: 'growing' } }], true, PlatformType.Electron)
+  expect(growing.find((node) => node.className === 'WorkersViewMemoryTrend WorkersViewMemoryTrendGrowing')).toMatchObject({
+    ariaLabel: 'Memory growing at 2.1 kB/s',
+    textContent: '↑ 2.1 kB/s',
+  })
+  expect(getDirectChildren(growing, 'WorkersViewWorkerRow').map(({ className }) => className)).toEqual([
+    'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell',
+  ])
+
+  const shrinking = getWorkersVirtualDom([{ ...worker, memoryTrend: { bytesPerSecond: 1024, direction: 'shrinking' } }], true, PlatformType.Electron)
+  expect(shrinking.find((node) => node.className === 'WorkersViewMemoryTrend WorkersViewMemoryTrendShrinking')).toMatchObject({
+    ariaLabel: 'Memory shrinking at 1.0 kB/s',
+    textContent: '↓ 1.0 kB/s',
+  })
+})
+
 test('renders sortable headers and exposes the selected sort direction', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, 'memory', 'descending')
   const headers = nodes.filter((node) => node.className === 'WorkersViewTableHeaderCell')
