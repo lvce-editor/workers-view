@@ -3,11 +3,15 @@ import type { WorkersState } from '../src/parts/WorkersState/WorkersState.ts'
 import { navigateWorkers } from '../src/parts/NavigateWorkers/NavigateWorkers.ts'
 
 const state = {
+  contextMenuWorkerId: undefined,
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 200,
   loaded: true,
   platform: 2,
   scrollTop: 0,
+  selectedWorkerId: undefined,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,

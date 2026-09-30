@@ -11,11 +11,15 @@ const workers: readonly DisplayedWorker[] = [
 ]
 
 const state: WorkersState = {
+  contextMenuWorkerId: undefined,
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 100,
   loaded: true,
   platform: 1,
   scrollTop: 0,
+  selectedWorkerId: undefined,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,

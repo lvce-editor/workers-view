@@ -2,11 +2,15 @@ import { expect, test } from '@jest/globals'
 import { setError } from '../src/parts/SetError/SetError.ts'
 
 const state = {
+  contextMenuWorkerId: undefined,
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 100,
   loaded: false,
   platform: 0,
   scrollTop: 0,
+  selectedWorkerId: undefined,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 7,
