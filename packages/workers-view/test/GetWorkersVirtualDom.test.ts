@@ -49,22 +49,9 @@ test('declares the actual number of root children in every view state', () => {
   expect(states.map(([root]) => root?.childCount)).toEqual([1, 1, 1, 2])
 })
 
-test('wraps the table and empty state while keeping errors and context menu at the view level', () => {
-  const nodes = getWorkersVirtualDom(
-    [worker],
-    true,
-    PlatformType.Electron,
-    new Error('Workers unavailable'),
-    undefined,
-    undefined,
-    worker.id,
-    worker.id,
-  )
-  expect(getDirectChildren(nodes, 'WorkersView').map((node) => node.className)).toEqual([
-    'WorkersViewError',
-    'WorkersViewTableContainer',
-    'WorkersViewContextMenu',
-  ])
+test('wraps the table and empty state while keeping errors at the view level', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, new Error('Workers unavailable'), undefined, undefined, worker.id)
+  expect(getDirectChildren(nodes, 'WorkersView').map((node) => node.className)).toEqual(['WorkersViewError', 'WorkersViewTableContainer'])
   expect(getDirectChildren(nodes, 'WorkersViewTableContainer').map((node) => node.className)).toEqual(['WorkersViewTable'])
   const tableChildren = getDirectChildren(nodes, 'WorkersViewTable')
   expect(tableChildren.map((node) => node.className)).toEqual([
@@ -123,16 +110,15 @@ test('renders sortable headers and exposes the selected sort direction', () => {
   expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([12])
 })
 
-test('marks the selected worker and renders its right-click action', () => {
-  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, undefined, worker.id, worker.id, true)
+test('marks the selected worker without rendering an inline context menu', () => {
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, undefined, worker.id, true)
   const row = nodes.find((node) => node.className?.includes('WorkersViewWorkerRow'))
   expect(row).toMatchObject({
     'aria-selected': true,
     className: 'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowFocused',
     'data-workerId': worker.id,
   })
-  expect(nodes.some((node) => node.className === 'WorkersViewContextMenu')).toBe(true)
-  expect(nodes.some((node) => node.className === 'WorkersViewContextMenuItem' && node.textContent === 'Terminate Worker')).toBe(true)
+  expect(nodes.some((node) => node.className === 'WorkersViewContextMenu')).toBe(false)
 })
 
 test('shows only worker names outside Electron', () => {

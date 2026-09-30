@@ -23,9 +23,6 @@ export const refresh = async (state: WorkersState): Promise<WorkersState> => {
   }
   return {
     ...refreshedState,
-    contextMenuWorkerId: refreshedState.workers.some((worker) => worker.id === latestState.contextMenuWorkerId)
-      ? latestState.contextMenuWorkerId
-      : undefined,
     hasFocus: latestState.hasFocus,
     selectedWorkerId: nextSelectedWorkerId,
     sortColumn,

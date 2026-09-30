@@ -6,7 +6,6 @@ import { showWorkerContextMenu } from '../src/parts/ShowWorkerContextMenu/ShowWo
 
 const worker = (id: string): { id: string; memory: null; name: string; runtimeName: string } => ({ id, memory: null, name: id, runtimeName: id })
 const state = {
-  contextMenuWorkerId: undefined,
   domRendered: false,
   error: undefined,
   hasFocus: false,
@@ -25,7 +24,7 @@ const state = {
 }
 
 test('selects a visible worker and ignores an unknown id', () => {
-  expect(selectWorker(state, 'two')).toMatchObject({ contextMenuWorkerId: undefined, hasFocus: true, selectedWorkerId: 'two' })
+  expect(selectWorker(state, 'two')).toMatchObject({ hasFocus: true, selectedWorkerId: 'two' })
   expect(selectWorker(state, 'missing')).toBe(state)
 })
 
@@ -43,8 +42,7 @@ test.each([
   ['Home', 'two', 'one'],
   ['End', 'two', 'three'],
 ])('navigates %s from %s to %s', (key, selectedWorkerId, expectedId) => {
-  expect(navigateWorkers({ ...state, contextMenuWorkerId: 'one', selectedWorkerId }, key)).toMatchObject({
-    contextMenuWorkerId: undefined,
+  expect(navigateWorkers({ ...state, selectedWorkerId }, key)).toMatchObject({
     hasFocus: true,
     selectedWorkerId: expectedId,
   })
@@ -56,10 +54,6 @@ test('ignores unsupported keys and leaves an empty list unchanged', () => {
   expect(navigateWorkers(empty, 'ArrowDown')).toBe(empty)
 })
 
-test('opens a context menu for the requested row and ignores stale rows', () => {
-  expect(showWorkerContextMenu(state, 'two')).toMatchObject({
-    contextMenuWorkerId: 'two',
-    selectedWorkerId: 'two',
-  })
-  expect(showWorkerContextMenu(state, 'missing')).toBe(state)
+test('ignores a stale row when opening its context menu', async () => {
+  await expect(showWorkerContextMenu(state, 'missing', 10, 20)).resolves.toBe(state)
 })

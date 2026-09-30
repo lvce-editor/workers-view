@@ -22,7 +22,6 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
   const { newState, oldState } = WorkersStates.get(uid)
   expect(oldState).toBe(newState)
   expect(newState).toEqual({
-    contextMenuWorkerId: undefined,
     domRendered: false,
     error: undefined,
     hasFocus: false,
@@ -204,7 +203,7 @@ test('refresh preserves a sort selection made while worker data is loading', asy
   expect(newState.workers.map((worker) => worker.name)).toEqual(['Alpha', 'Zulu'])
 })
 
-test('refresh preserves a selected worker and its menu by stable id', async () => {
+test('refresh preserves the selected worker by stable id', async () => {
   const workers = [
     { id: 'worker-a', name: 'Alpha', runtimeName: 'Alpha' },
     { id: 'worker-b', name: 'Beta', runtimeName: 'Beta' },
@@ -213,14 +212,12 @@ test('refresh preserves a selected worker and its menu by stable id', async () =
   create()
   const initial = {
     ...WorkersStates.get(uid).newState,
-    contextMenuWorkerId: 'worker-b',
     hasFocus: true,
     selectedWorkerId: 'worker-b',
   }
   await commandMap['Workers.setComponentState'](uid, initial)
   await commandMap['Workers.refresh'](uid)
   expect(WorkersStates.get(uid).newState).toMatchObject({
-    contextMenuWorkerId: 'worker-b',
     hasFocus: true,
     selectedWorkerId: 'worker-b',
   })
@@ -231,12 +228,11 @@ test('refresh falls back to the first remaining worker when selection disappears
   create()
   const initial = {
     ...WorkersStates.get(uid).newState,
-    contextMenuWorkerId: 'worker-b',
     selectedWorkerId: 'worker-b',
   }
   await commandMap['Workers.setComponentState'](uid, initial)
   await commandMap['Workers.refresh'](uid)
-  expect(WorkersStates.get(uid).newState).toMatchObject({ contextMenuWorkerId: undefined, selectedWorkerId: 'worker-a' })
+  expect(WorkersStates.get(uid).newState).toMatchObject({ selectedWorkerId: 'worker-a' })
 })
 
 test('sorts memory by default in descending order when its header command is selected', async () => {
@@ -253,10 +249,9 @@ test('registers the sort event handlers without a refresh button handler', () =>
     { name: 8, params: ['focusWorkers'], preventDefault: true },
     {
       name: 6,
-      params: ['showWorkerContextMenu', 'event.currentTarget.dataset.workerId'],
+      params: ['showWorkerContextMenu', 'event.currentTarget.dataset.workerId', 'event.clientX', 'event.clientY'],
       preventDefault: true,
     },
-    { name: 7, params: ['terminateWorker', 'event.currentTarget.dataset.workerId'], preventDefault: true },
     {
       name: 9,
       params: ['handleTableClick', 'event.clientX', 'event.clientY', 'event.currentTarget.clientWidth'],

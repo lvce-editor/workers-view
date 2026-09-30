@@ -11,7 +11,6 @@ const workers = [
 ]
 
 const state = {
-  contextMenuWorkerId: undefined,
   domRendered: false,
   error: undefined,
   hasFocus: false,

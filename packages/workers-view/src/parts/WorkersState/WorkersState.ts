@@ -12,7 +12,6 @@ export type SortColumn = 'memory' | 'name'
 export type SortDirection = 'ascending' | 'descending'
 
 export interface WorkersState {
-  readonly contextMenuWorkerId: string | undefined
   readonly domRendered: boolean
   readonly error: Error | undefined
   readonly hasFocus: boolean

@@ -21,5 +21,5 @@ export const navigateWorkers = (state: WorkersState, key: string): WorkersState 
     default:
       return state
   }
-  return { ...state, contextMenuWorkerId: undefined, hasFocus: true, selectedWorkerId: workers[nextIndex].id }
+  return { ...state, hasFocus: true, selectedWorkerId: workers[nextIndex].id }
 }
