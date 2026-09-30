@@ -4,6 +4,7 @@ import type { DisplayedWorker } from '../WorkersState/WorkersState.ts'
 import * as AriaRoles from '../AriaRoles/AriaRoles.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import * as GetEmptyState from '../GetEmptyState/GetEmptyState.ts'
+import * as GetHeaderCell from '../GetHeaderCell/GetHeaderCell.ts'
 import * as GetWorkerRow from '../GetWorkerRow/GetWorkerRow.ts'
 import * as TabIndex from '../TabIndex/TabIndex.ts'
 import * as WorkersViewStrings from '../WorkersViewStrings/WorkersViewStrings.ts'
@@ -25,23 +26,10 @@ export const getWorkersVirtualDom = (
   hasFocus = false,
 ): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
-  const getHeaderCell = (column: 'memory' | 'name', textContent: string): VirtualDomNode[] => [
-    {
-      'aria-sort': sortColumn === column ? sortDirection : 'none',
-      childCount: 1,
-      className: 'WorkersViewTableHeaderCell',
-      role: AriaRoles.ColumnHeader,
-      type: VirtualDomElements.Th,
-    },
-    {
-      className: 'WorkersViewTableHeaderButton',
-      'data-sortColumn': column,
-      onKeyDown: DomEventListenerFunctions.SortHeaderByKeyboard,
-      textContent,
-      type: VirtualDomElements.Button,
-    },
+  const headerCells = [
+    GetHeaderCell.getHeaderCell('name', WorkersViewStrings.name(), sortColumn, sortDirection),
+    GetHeaderCell.getHeaderCell('memory', WorkersViewStrings.heapUse(), sortColumn, sortDirection),
   ]
-  const headerCells = [getHeaderCell('name', WorkersViewStrings.name()), getHeaderCell('memory', WorkersViewStrings.heapUse())]
   const headerRow = { childCount: headerCells.length, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
   const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
   const rows = workers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, worker.id === selectedWorkerId, hasFocus))
