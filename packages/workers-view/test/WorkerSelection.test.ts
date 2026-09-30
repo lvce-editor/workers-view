@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals'
 import { focusWorkers } from '../src/parts/FocusWorkers/FocusWorkers.ts'
-import { navigateWorkers } from '../src/parts/NavigateWorkers/NavigateWorkers.ts'
+import { focusFirst, focusLast, focusNext, focusPrevious, navigateWorkers } from '../src/parts/NavigateWorkers/NavigateWorkers.ts'
 import { selectWorker } from '../src/parts/SelectWorker/SelectWorker.ts'
 import { showWorkerContextMenu } from '../src/parts/ShowWorkerContextMenu/ShowWorkerContextMenu.ts'
 
@@ -46,6 +46,13 @@ test.each([
     hasFocus: true,
     selectedWorkerId: expectedId,
   })
+})
+
+test('dispatches declarative navigation commands to the existing selection behavior', () => {
+  expect(focusNext(state).selectedWorkerId).toBe('one')
+  expect(focusPrevious({ ...state, selectedWorkerId: 'two' }).selectedWorkerId).toBe('one')
+  expect(focusFirst({ ...state, selectedWorkerId: 'two' }).selectedWorkerId).toBe('one')
+  expect(focusLast({ ...state, selectedWorkerId: 'two' }).selectedWorkerId).toBe('three')
 })
 
 test('ignores unsupported keys and leaves an empty list unchanged', () => {

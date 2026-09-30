@@ -2,8 +2,8 @@ import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEven
 
 export const renderEventListeners = (): readonly any[] => [
   {
-    name: DomEventListenerFunctions.NavigateWorkers,
-    params: ['navigateWorkers', 'event.key'],
+    name: DomEventListenerFunctions.BlurWorkers,
+    params: ['handleBlur'],
     preventDefault: false,
   },
   {
