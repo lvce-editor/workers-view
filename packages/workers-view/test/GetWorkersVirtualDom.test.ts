@@ -57,7 +57,6 @@ test('wraps the table and empty state while keeping errors and context menu at t
     new Error('Workers unavailable'),
     undefined,
     undefined,
-    undefined,
     worker.id,
     worker.id,
   )
@@ -114,14 +113,14 @@ test('formats worker memory in Electron', () => {
 })
 
 test('renders sortable headers and exposes the selected sort direction', () => {
-  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, 'memory', 'descending')
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, 'memory', 'descending')
   const headers = nodes.filter((node) => node.className === 'WorkersViewTableHeaderCell')
   expect(headers.map((header) => header['aria-sort'])).toEqual(['none', 'descending'])
   expect(nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton').map((button) => button.onClick)).toEqual([2, 3])
 })
 
 test('marks the selected worker and renders its right-click action', () => {
-  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, undefined, undefined, worker.id, worker.id, true)
+  const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, undefined, undefined, worker.id, worker.id, true)
   const row = nodes.find((node) => node.className?.includes('WorkersViewWorkerRow'))
   expect(row).toMatchObject({
     'aria-selected': true,
@@ -163,24 +162,4 @@ test('uses the existing English strings by default', () => {
   expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
   expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe('Workers')
   expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.textContent === 'No workers are running.')).toBe(true)
-})
-
-test('uses substituted strings in labels, empty state, and the table accessible name', () => {
-  const strings = {
-    javaScriptHeapUsed: (): string => 'translated heap',
-    name: (): string => 'translated name',
-    noWorkersAreRunning: (): string => 'translated empty state',
-    terminateWorker: (): string => 'translated terminate',
-    unavailable: (): string => 'translated unavailable',
-    workers: (): string => 'translated workers',
-  }
-  const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron, undefined, strings)
-  expect(nodes.some((node) => node.textContent === 'translated workers')).toBe(true)
-  expect(nodes.some((node) => node.textContent === 'translated name')).toBe(true)
-  expect(nodes.some((node) => node.textContent === 'translated heap')).toBe(true)
-  expect(nodes.some((node) => node.textContent === 'translated unavailable')).toBe(true)
-  expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe('translated workers')
-  expect(getWorkersVirtualDom([], true, PlatformType.Web, undefined, strings).some((node) => node.textContent === 'translated empty state')).toBe(
-    true,
-  )
 })
