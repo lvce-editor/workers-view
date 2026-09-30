@@ -1,6 +1,7 @@
-import { expect, jest, test } from '@jest/globals'
+import { afterEach, expect, jest, test } from '@jest/globals'
 import { PlatformType } from '@lvce-editor/constants'
-import { MainProcess, RendererWorker } from '@lvce-editor/rpc-registry'
+import { PlainMessagePortRpc } from '@lvce-editor/rpc'
+import { RendererWorker } from '@lvce-editor/rpc-registry'
 import type { WorkersState } from '../src/parts/WorkersState/WorkersState.ts'
 import { takeHeapSnapshot } from '../src/parts/TakeHeapSnapshot/TakeHeapSnapshot.ts'
 
@@ -23,14 +24,28 @@ const state: WorkersState = {
   y: 0,
 }
 
+const ports: MessagePort[] = []
+afterEach(() => {
+  for (const port of ports) port.close()
+  ports.length = 0
+})
+
 test('takes a snapshot of the selected worker and opens the returned URI', async () => {
   const takeSnapshot = jest.fn<(...args: readonly unknown[]) => Promise<string>>(async () => 'file:///worker.heapsnapshot')
   const getWindowId = jest.fn<(...args: readonly unknown[]) => Promise<number>>(async () => 7)
   const openUri = jest.fn<(...args: readonly unknown[]) => Promise<void>>(async () => {})
-  MainProcess.registerMockRpc({ 'ElectronDeveloper.takeWorkerHeapSnapshot': takeSnapshot })
-  RendererWorker.registerMockRpc({ 'GetWindowId.getWindowId': getWindowId, 'Main.openUri': openUri })
+  const send = jest.fn(async (port: MessagePort, _command: string, _rpcId: number) => {
+    ports.push(port)
+    await PlainMessagePortRpc.create({ commandMap: { 'ElectronDeveloper.takeWorkerHeapSnapshot': takeSnapshot }, messagePort: port })
+  })
+  RendererWorker.registerMockRpc({
+    'GetWindowId.getWindowId': getWindowId,
+    'Main.openUri': openUri,
+    'SendMessagePortToMainProcess.sendMessagePortToMainProcess': send,
+  })
   await takeHeapSnapshot(state, worker.id)
-  expect(takeSnapshot).toHaveBeenCalledWith(7, worker.runtimeName)
+  expect(send).toHaveBeenCalledWith(expect.any(MessagePort), 'HandleElectronMessagePort.handleElectronMessagePort', 0)
+  expect(takeSnapshot).toHaveBeenCalledWith(7, worker.name)
   expect(openUri).toHaveBeenCalledWith('file:///worker.heapsnapshot')
 })
 
@@ -42,4 +57,28 @@ test.each<[string, Readonly<WorkersState>, string]>([
   ['unsupported platform', unsupportedState, worker.id],
 ])('does not start a snapshot for a %s', async (_name, currentState, workerId) => {
   await expect(takeHeapSnapshot(currentState, workerId)).resolves.toBe(currentState)
+})
+
+test('propagates backend failure and closes the snapshot connection', async () => {
+  let closed: Promise<void> | undefined
+  const openUri = jest.fn()
+  RendererWorker.registerMockRpc({
+    'GetWindowId.getWindowId': () => 7,
+    'Main.openUri': openUri,
+    'SendMessagePortToMainProcess.sendMessagePortToMainProcess': async (port: MessagePort) => {
+      ports.push(port)
+      closed = new Promise((resolve) => port.addEventListener('close', () => resolve(), { once: true }))
+      await PlainMessagePortRpc.create({
+        commandMap: {
+          'ElectronDeveloper.takeWorkerHeapSnapshot': () => {
+            throw new Error('Worker not found')
+          },
+        },
+        messagePort: port,
+      })
+    },
+  })
+  await expect(takeHeapSnapshot(state, worker.id)).rejects.toThrow('Worker not found')
+  await closed
+  expect(openUri).not.toHaveBeenCalled()
 })
