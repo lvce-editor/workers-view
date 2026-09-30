@@ -35,45 +35,46 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
   }
   const timestamp = services.now()
   const workerIds = new Set(workers.map(({ id }) => id))
-  const memorySamples: MemorySample[] = showTrend
-    ? previousSamples.filter(
-        (sample) => workerIds.has(sample.id) && sample.timestamp <= timestamp && timestamp - sample.timestamp <= GetMemoryTrend.windowMs,
-      )
-    : []
+  const samplesByWorker = new Map<string, MemorySample[]>()
+  if (showTrend) {
+    for (const sample of previousSamples) {
+      if (!workerIds.has(sample.id) || sample.timestamp > timestamp || timestamp - sample.timestamp > GetMemoryTrend.windowMs) continue
+      const samples = samplesByWorker.get(sample.id) || []
+      samples.push(sample)
+      samplesByWorker.set(sample.id, samples)
+    }
+  }
   const displayedWorkers = workers.map((worker) => {
     const usage = Object.hasOwn(usages, worker.runtimeName) ? usages[worker.runtimeName] : undefined
     const memory = usage && Number.isFinite(usage.usedSize) ? usage.usedSize : null
-    if (memory === null || !showTrend) {
+    if (memory === null) {
+      samplesByWorker.delete(worker.id)
       return { ...worker, memory }
     }
-    let existingSampleIndex = -1
-    for (const [index, sample] of memorySamples.entries()) {
-      if (sample.id === worker.id && sample.timestamp === timestamp) {
-        existingSampleIndex = index
-        break
-      }
+    if (!showTrend) {
+      return { ...worker, memory }
     }
-    if (existingSampleIndex === -1) {
-      memorySamples.push({ id: worker.id, memory, timestamp })
+    const samples = samplesByWorker.get(worker.id) || []
+    const latestSample = samples.at(-1)
+    if (latestSample?.timestamp === timestamp) {
+      samples[samples.length - 1] = { id: worker.id, memory, timestamp }
     } else {
-      memorySamples[existingSampleIndex] = { id: worker.id, memory, timestamp }
+      samples.push({ id: worker.id, memory, timestamp })
     }
-    const samples = memorySamples.filter((sample) => sample.id === worker.id)
+    if (samples.length > 61) samples.shift()
+    samplesByWorker.set(worker.id, samples)
     const memoryTrend = GetMemoryTrend.getMemoryTrend(samples)
     return { ...worker, memory, ...(memoryTrend && { memoryTrend }) }
   })
-  const currentSampleIds = new Set<string>()
-  for (const worker of displayedWorkers) {
-    if (worker.memory !== null) {
-      currentSampleIds.add(worker.id)
-    }
+  const memorySamples: MemorySample[] = []
+  for (const samples of samplesByWorker.values()) {
+    memorySamples.push(...samples)
   }
-  const retainedSamples = memorySamples.filter((sample) => currentSampleIds.has(sample.id)).slice(-workers.length * 61)
   return {
     ...state,
     error: undefined,
     loaded: true,
-    memorySamples: retainedSamples,
+    memorySamples,
     workers: SortWorkers.sortWorkers(displayedWorkers, sortColumn, sortDirection),
   }
 }
