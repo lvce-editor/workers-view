@@ -28,10 +28,9 @@ export const getWorkersVirtualDom = (
   const showMemory = platform === PlatformType.Electron
   const headerCells = [
     GetHeaderCell.getHeaderCell('name', WorkersViewStrings.name(), sortColumn, sortDirection),
-    GetHeaderCell.getHeaderCell('memory', WorkersViewStrings.javaScriptHeapUsed(), sortColumn, sortDirection),
+    GetHeaderCell.getHeaderCell('memory', WorkersViewStrings.heapUse(), sortColumn, sortDirection),
   ]
   const headerRow = { childCount: headerCells.length, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
-  const title = { className: 'WorkersViewTitle', textContent: WorkersViewStrings.workers(), type: VirtualDomElements.H1 }
   const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
   const rows = workers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, worker.id === selectedWorkerId, hasFocus))
   const table = {
@@ -66,7 +65,6 @@ export const getWorkersVirtualDom = (
     type: VirtualDomElements.Div,
   }
   const children = [
-    title,
     ...errorDom,
     tableContainer,
     table,
@@ -76,5 +74,5 @@ export const getWorkersVirtualDom = (
     ...emptyDom,
     ...contextMenu,
   ]
-  return [{ childCount: 2 + errorDom.length + Number(contextMenu.length > 0), className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
+  return [{ childCount: 1 + errorDom.length + Number(contextMenu.length > 0), className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }

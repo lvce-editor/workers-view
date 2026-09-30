@@ -46,7 +46,7 @@ test('declares the actual number of root children in every view state', () => {
     getWorkersVirtualDom([], true, PlatformType.Web),
     getWorkersVirtualDom([], true, PlatformType.Web, new Error('Workers unavailable')),
   ]
-  expect(states.map(([root]) => root?.childCount)).toEqual([2, 2, 2, 3])
+  expect(states.map(([root]) => root?.childCount)).toEqual([1, 1, 1, 2])
 })
 
 test('wraps the table and empty state while keeping errors and context menu at the view level', () => {
@@ -61,7 +61,6 @@ test('wraps the table and empty state while keeping errors and context menu at t
     worker.id,
   )
   expect(getDirectChildren(nodes, 'WorkersView').map((node) => node.className)).toEqual([
-    'WorkersViewTitle',
     'WorkersViewError',
     'WorkersViewTableContainer',
     'WorkersViewContextMenu',
@@ -85,7 +84,6 @@ test('uses PascalCase class names for every Workers view element', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, new Error('Workers unavailable'))
   expect(nodes.map((node) => node.className)).toEqual([
     'WorkersView',
-    'WorkersViewTitle',
     'WorkersViewError',
     'WorkersViewTableContainer',
     'WorkersViewTable',
@@ -103,7 +101,7 @@ test('uses PascalCase class names for every Workers view element', () => {
 
 test('shows a heap column in Electron and leaves missing measurements unavailable', () => {
   const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
-  expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Heap use')).toBe(true)
   expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
 })
 
@@ -122,7 +120,7 @@ test('renders sortable headers and exposes the selected sort direction', () => {
   expect(buttons.map((button) => button.onClick)).toEqual([undefined, undefined])
   expect(buttons.map((button) => button.onKeyDown)).toEqual([11, 11])
   expect(buttons.map((button) => button['data-sortColumn'])).toEqual(['name', 'memory'])
-  expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([undefined])
+  expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([12])
 })
 
 test('marks the selected worker and renders its right-click action', () => {
@@ -140,7 +138,7 @@ test('marks the selected worker and renders its right-click action', () => {
 test('shows only worker names outside Electron', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Web)
   expect(nodes.some((node) => node.textContent === 'Editor Worker')).toBe(true)
-  expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(false)
+  expect(nodes.some((node) => node.textContent === 'Heap use')).toBe(false)
   expect(nodes.some((node) => node.textContent === '1.0 KiB')).toBe(false)
 })
 
@@ -161,10 +159,10 @@ test('renders an error message with an alert role', () => {
 
 test('uses the existing English strings by default', () => {
   const nodes = getWorkersVirtualDom([{ ...worker, memory: null }], true, PlatformType.Electron)
-  expect(nodes.some((node) => node.textContent === 'Workers')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Workers')).toBe(false)
   expect(nodes.some((node) => node.className === 'WorkersViewRefreshButton')).toBe(false)
   expect(nodes.some((node) => node.textContent === 'Name')).toBe(true)
-  expect(nodes.some((node) => node.textContent === 'JavaScript heap used')).toBe(true)
+  expect(nodes.some((node) => node.textContent === 'Heap use')).toBe(true)
   expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
   expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe('Workers')
   expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.textContent === 'No workers are running.')).toBe(true)

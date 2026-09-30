@@ -269,6 +269,12 @@ test('registers the sort event handlers without a refresh button handler', () =>
       preventDefault: true,
       stopPropagation: true,
     },
+    {
+      name: 12,
+      params: ['selectWorker', 'event.currentTarget.dataset.workerId'],
+      preventDefault: true,
+      stopPropagation: true,
+    },
   ])
 })
 

@@ -32,28 +32,28 @@ const state = {
 const click = (target: WorkersState, clientX: number, clientY: number): WorkersState => handleTableClick(target, clientX, clientY, target.width)
 
 test('uses the layout origin and platform column count for pointer sorting', () => {
-  expect(click(state, 150, 250)).toMatchObject({ sortColumn: 'name', sortDirection: 'ascending' })
-  expect(click(state, 350, 250)).toMatchObject({ sortColumn: 'memory', sortDirection: 'descending' })
-  expect(click({ ...state, platform: PlatformType.Web }, 450, 250)).toMatchObject({ sortColumn: 'name' })
-  expect(click(state, 99, 250)).toBe(state)
-  expect(click(state, 500, 250)).toBe(state)
-  expect(handleTableClick(state, 490, 250, 380)).toBe(state)
+  expect(click(state, 150, 210)).toMatchObject({ sortColumn: 'name', sortDirection: 'ascending' })
+  expect(click(state, 350, 210)).toMatchObject({ sortColumn: 'memory', sortDirection: 'descending' })
+  expect(click({ ...state, platform: PlatformType.Web }, 450, 210)).toMatchObject({ sortColumn: 'name' })
+  expect(click(state, 99, 210)).toBe(state)
+  expect(click(state, 500, 210)).toBe(state)
+  expect(handleTableClick(state, 490, 210, 380)).toBe(state)
 })
 
-test('selects the displayed row after title, error and scrolling offsets', () => {
-  expect(click(state, 150, 280)).toMatchObject({ selectedWorkerId: 'one' })
-  expect(click(state, 150, 302)).toMatchObject({ selectedWorkerId: 'two' })
+test('selects the displayed row after error and scrolling offsets', () => {
+  expect(click(state, 150, 230)).toMatchObject({ selectedWorkerId: 'one' })
+  expect(click(state, 150, 252)).toMatchObject({ selectedWorkerId: 'two' })
   const withError = { ...state, error: new Error('unavailable') }
-  expect(click(withError, 150, 310)).toMatchObject({ selectedWorkerId: 'one' })
+  expect(click(withError, 150, 260)).toMatchObject({ selectedWorkerId: 'one' })
   const scrolled = { ...state, scrollTop: 22 }
-  expect(click(scrolled, 150, 272)).toMatchObject({ selectedWorkerId: 'two' })
-  expect(click(scrolled, 150, 250)).toMatchObject({ sortColumn: 'name' })
+  expect(click(scrolled, 150, 225)).toMatchObject({ selectedWorkerId: 'two' })
+  expect(click(scrolled, 150, 210)).toMatchObject({ sortColumn: 'name' })
 })
 
 test('ignores clicks outside the table rows and header', () => {
-  expect(click(state, 150, 240)).toBe(state)
+  expect(click(state, 150, 199)).toBe(state)
   expect(click(state, 150, 400)).toBe(state)
-  expect(click({ ...state, workers: [] }, 150, 280)).toMatchObject({ sortColumn: undefined })
+  expect(click({ ...state, workers: [] }, 150, 230)).toMatchObject({ sortColumn: undefined })
 })
 
 test('tracks scroll position', () => {

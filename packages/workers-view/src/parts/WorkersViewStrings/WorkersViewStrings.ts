@@ -3,7 +3,7 @@ import * as UiStrings from '../UiStrings/UiStrings.ts'
 
 export const workers = (): string => I18nString.i18nString(UiStrings.Workers)
 export const name = (): string => I18nString.i18nString(UiStrings.Name)
-export const javaScriptHeapUsed = (): string => I18nString.i18nString(UiStrings.JavaScriptHeapUsed)
+export const heapUse = (): string => I18nString.i18nString(UiStrings.HeapUse)
 export const unavailable = (): string => I18nString.i18nString(UiStrings.Unavailable)
 export const noWorkersAreRunning = (): string => I18nString.i18nString(UiStrings.NoWorkersAreRunning)
 export const terminateWorker = (): string => I18nString.i18nString(UiStrings.TerminateWorker)

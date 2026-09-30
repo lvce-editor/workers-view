@@ -1,6 +1,6 @@
 export const Workers = 'Workers'
 export const Name = 'Name'
-export const JavaScriptHeapUsed = 'JavaScript heap used'
+export const HeapUse = 'Heap use'
 export const Unavailable = 'Unavailable'
 export const NoWorkersAreRunning = 'No workers are running.'
 export const TerminateWorker = 'Terminate Worker'
