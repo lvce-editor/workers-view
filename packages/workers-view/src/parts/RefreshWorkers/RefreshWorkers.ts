@@ -12,7 +12,9 @@ export const refresh = async (state: WorkersState): Promise<WorkersState> => {
   const refreshedState = await Refresh.refresh(state, {
     getMemoryUsages: () =>
       signal?.aborted ? Promise.resolve(Object.create(null) as Record<string, { readonly usedSize: number }>) : WorkerMemory.getMemoryUsages(uid),
+    getShowMemoryUsageTrend: async () => (await RendererProcess.invoke('Preferences.get', 'workers.memoryUsageTrend.enabled')) === true,
     getWorkers: () => RendererProcess.invoke('Workers.getWorkers'),
+    now: Date.now,
   })
   const latestState = WorkersStates.get(uid)?.newState || state
   const { selectedWorkerId, sortColumn, sortDirection } = latestState

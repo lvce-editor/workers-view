@@ -37,6 +37,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   const workers = Array.from({ length: 40 }, (_, index) => ({
     id: String(index),
     memory: index,
+    ...(index === 0 && { memoryTrend: { bytesPerSecond: 2100, direction: 'growing' as const } }),
     name: `Worker ${index}`,
     runtimeName: `Worker ${index}`,
   }))
@@ -45,7 +46,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
     hasFocus: false,
     height: 120,
     loaded: true,
-    platform: 1,
+    platform: 2,
     scrollTop: 0,
     sortColumn: undefined,
     sortDirection: undefined,
@@ -58,13 +59,14 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await Command.execute('Workers.setComponentState', workersState)
   await WorkersView.resize(800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
+  const firstWorkerTrend = workerRows.first().locator('.WorkersViewMemoryTrendGrowing')
   await expect(workerRows).toHaveCount(40)
+  await expect(firstWorkerTrend).toHaveText('↑ 2.1 kB/s')
   await Command.execute('Workers.setComponentState', workersState)
   await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()
-  const changedWorkers = workers.map((worker: Readonly<(typeof workers)[number]>, index) =>
-    index === 0 ? { ...worker, name: 'Updated Worker' } : worker,
-  )
+  const [firstChangedWorker, ...otherChangedWorkers] = workers
+  const changedWorkers = firstChangedWorker ? [{ ...firstChangedWorker, name: 'Updated Worker' }, ...otherChangedWorkers] : []
   await Command.execute('Workers.setComponentState', { ...workersState, workers: changedWorkers })
   await expect(workerRows.first()).toContainText('Updated Worker')
   await expect(heading).toHaveCount(0)
