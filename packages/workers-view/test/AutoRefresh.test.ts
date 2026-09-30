@@ -52,6 +52,22 @@ test('skips overlapping updates while allowing other views to refresh', async ()
   ])
 })
 
+test('keeps other pending views registered when a disposed update completes', async () => {
+  const firstUpdate = Promise.withResolvers<void>()
+  const secondUpdate = Promise.withResolvers<void>()
+  update.mockReturnValueOnce(firstUpdate.promise).mockReturnValueOnce(secondUpdate.promise)
+  AutoRefresh.start(1)
+  AutoRefresh.start(2)
+  await jest.advanceTimersByTimeAsync(1000)
+
+  AutoRefresh.dispose(1)
+  firstUpdate.resolve()
+  await jest.advanceTimersByTimeAsync(1000)
+
+  expect(update).toHaveBeenCalledTimes(2)
+  secondUpdate.resolve()
+})
+
 test('reports a rejected update and allows the next tick to retry', async () => {
   const error = new Error('renderer unavailable')
   const log = jest.spyOn(console, 'error').mockImplementation(() => {})

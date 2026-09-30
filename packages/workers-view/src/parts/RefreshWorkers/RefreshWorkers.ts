@@ -10,7 +10,7 @@ export const refresh = async (state: WorkersState): Promise<WorkersState> => {
   const { uid } = state
   const signal = ViewLifetime.get(uid)
   const refreshedState = await Refresh.refresh(state, {
-    getMemoryUsages: () => (signal?.aborted ? Promise.resolve(new Map()) : WorkerMemory.getMemoryUsages(uid)),
+    getMemoryUsages: () => (signal?.aborted ? Promise.resolve(Object.create(null) as Record<string, { readonly usedSize: number }>) : WorkerMemory.getMemoryUsages(uid)),
     getWorkers: () => RendererProcess.invoke('Workers.getWorkers'),
   })
   const latestState = WorkersStates.get(uid)?.newState || state
