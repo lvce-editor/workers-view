@@ -19,10 +19,13 @@ export interface WorkersState {
   readonly height: number
   readonly loaded: boolean
   readonly platform: number
+  readonly scrollTop: number
   readonly selectedWorkerId?: string | undefined
   readonly sortColumn: SortColumn | undefined
   readonly sortDirection: SortDirection | undefined
   readonly uid: number
   readonly width: number
   readonly workers: readonly DisplayedWorker[]
+  readonly x: number
+  readonly y: number
 }

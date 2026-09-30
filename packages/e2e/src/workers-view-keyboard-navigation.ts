@@ -47,8 +47,11 @@ export const test: Test = async ({ Command, expect, KeyBoard, WorkersView }) => 
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Exercise the actual row selection event.
   await rowA.click()
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Clicking a table cell must select its containing row through the table listener.
+  await rowB.locator('.WorkersViewWorkerCell').first().click()
+  await expect(rowB).toHaveAttribute('aria-selected', 'true')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Sorting should preserve selection by worker id.
   await WorkersView.nameHeaderButton().click()
-  const sortedRowA = table.locator('[data-worker-id="worker-a"]')
-  await expect(sortedRowA).toHaveAttribute('aria-selected', 'true')
+  const sortedRowB = table.locator('[data-worker-id="worker-b"]')
+  await expect(sortedRowB).toHaveAttribute('aria-selected', 'true')
 }

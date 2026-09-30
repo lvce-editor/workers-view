@@ -25,7 +25,7 @@ export const getWorkersVirtualDom = (
   hasFocus = false,
 ): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
-  const getHeaderCell = (column: 'memory' | 'name', textContent: string, listener: number): VirtualDomNode[] => [
+  const getHeaderCell = (column: 'memory' | 'name', textContent: string): VirtualDomNode[] => [
     {
       'aria-sort': sortColumn === column ? sortDirection : 'none',
       childCount: 1,
@@ -35,15 +35,13 @@ export const getWorkersVirtualDom = (
     },
     {
       className: 'WorkersViewTableHeaderButton',
-      onClick: listener,
+      'data-sortColumn': column,
+      onKeyDown: DomEventListenerFunctions.SortHeaderByKeyboard,
       textContent,
       type: VirtualDomElements.Button,
     },
   ]
-  const headerCells = [
-    getHeaderCell('name', WorkersViewStrings.name(), DomEventListenerFunctions.SortByName),
-    getHeaderCell('memory', WorkersViewStrings.javaScriptHeapUsed(), DomEventListenerFunctions.SortByMemory),
-  ]
+  const headerCells = [getHeaderCell('name', WorkersViewStrings.name()), getHeaderCell('memory', WorkersViewStrings.javaScriptHeapUsed())]
   const headerRow = { childCount: headerCells.length, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
   const title = { className: 'WorkersViewTitle', textContent: WorkersViewStrings.workers(), type: VirtualDomElements.H1 }
   const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
@@ -52,6 +50,7 @@ export const getWorkersVirtualDom = (
     ariaLabel: WorkersViewStrings.workers(),
     childCount: workers.length + 1,
     className: 'WorkersViewTable',
+    onClick: DomEventListenerFunctions.TableClick,
     onFocus: DomEventListenerFunctions.FocusWorkers,
     onKeyDown: DomEventListenerFunctions.NavigateWorkers,
     role: AriaRoles.Table,
@@ -75,6 +74,7 @@ export const getWorkersVirtualDom = (
   const tableContainer = {
     childCount: 1 + emptyDom.length,
     className: 'WorkersViewTableContainer',
+    onScroll: DomEventListenerFunctions.ScrollWorkers,
     type: VirtualDomElements.Div,
   }
   const children = [

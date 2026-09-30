@@ -2,7 +2,7 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'workers-view-open'
 
-export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
+export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView }) => {
   await WorkersView.open()
 
   const view = WorkersView.root()
@@ -10,6 +10,11 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   await expect(view).toBeVisible()
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
+  const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
+  const workersComponent = components.find((component) => component.moduleId === 'Workers')
+  if (!workersComponent) {
+    throw new Error('Expected Workers component to exist')
+  }
   const tableInContainer = view.locator('.WorkersViewTableContainer > .WorkersViewTable')
   await expect(tableInContainer).toHaveCount(1)
   await expect(nameHeader).toHaveAttribute('aria-sort', 'none')
@@ -20,36 +25,50 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify a repeated real header click reverses the sort.
   await WorkersView.nameHeaderButton().click()
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '.WorkersViewTableHeaderButton')
+  await KeyBoard.press('Enter')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
+  await KeyBoard.press('Space')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
   await WorkersView.refresh()
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
 
-  const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
-  const workersComponent = components.find((component) => component.moduleId === 'Workers')
-  if (!workersComponent) {
-    throw new Error('Expected Workers component to exist')
-  }
-  const workersState = await Command.execute('Workers.getComponentState')
   const workers = Array.from({ length: 40 }, (_, index) => ({
     id: String(index),
     memory: index,
     name: `Worker ${index}`,
     runtimeName: `Worker ${index}`,
   }))
-  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
-  await WorkersView.resize(800, 120)
+  const workersState = {
+    error: undefined,
+    hasFocus: false,
+    height: 120,
+    loaded: true,
+    platform: 1,
+    scrollTop: 0,
+    sortColumn: undefined,
+    sortDirection: undefined,
+    uid: workersComponent.uid,
+    width: 800,
+    workers,
+    x: 0,
+    y: 0,
+  }
+  await Command.execute('Workers.setComponentState', workersState)
+  await Command.execute('Workers.resize', 0, 0, 800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   await expect(workerRows).toHaveCount(40)
-  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
+  await Command.execute('Workers.setComponentState', workersState)
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
   const changedWorkers = workers.map((worker: Readonly<(typeof workers)[number]>, index) =>
     index === 0 ? { ...worker, name: 'Updated Worker' } : worker,
   )
-  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers: changedWorkers })
+  await Command.execute('Workers.setComponentState', { ...workersState, workers: changedWorkers })
   await expect(workerRows.first()).toContainText('Updated Worker')
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
-  await WorkersView.resize(800, 800)
+  await Command.execute('Workers.resize', 0, 0, 800, 800)
 
   await Main.closeActiveEditor()
   await WorkersView.open()
