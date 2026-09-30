@@ -13,7 +13,7 @@
     "@lvce-editor/server": "0.118.21"
   },
   "devDependencies": {
-    "@lvce-editor/test-worker": "^17.27.3",
+    "@lvce-editor/test-worker": "^17.27.4",
     "@types/node": "^26.1.1"
   }
 }

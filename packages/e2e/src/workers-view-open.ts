@@ -55,7 +55,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
     y: 0,
   }
   await Command.execute('Workers.setComponentState', workersState)
-  await Command.execute('Workers.resize', 0, 0, 800, 120)
+  await WorkersView.resize(800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   await expect(workerRows).toHaveCount(40)
   await Command.execute('Workers.setComponentState', workersState)
@@ -68,7 +68,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await expect(workerRows.first()).toContainText('Updated Worker')
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
-  await Command.execute('Workers.resize', 0, 0, 800, 800)
+  await WorkersView.resize(800, 800)
 
   await Main.closeActiveEditor()
   await WorkersView.open()
