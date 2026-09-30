@@ -6,12 +6,14 @@ import * as FocusWorkers from '../FocusWorkers/FocusWorkers.ts'
 import * as GetComponentState from '../GetComponentState/GetComponentState.ts'
 import * as HandleBlur from '../HandleBlur/HandleBlur.ts'
 import * as HandleMessagePort from '../HandleMessagePort/HandleMessagePort.ts'
+import * as HandleTableClick from '../HandleTableClick/HandleTableClick.ts'
 import * as LoadContent from '../LoadContent/LoadContent.ts'
 import * as NavigateWorkers from '../NavigateWorkers/NavigateWorkers.ts'
 import * as RefreshWorkers from '../RefreshWorkers/RefreshWorkers.ts'
 import * as Render2 from '../Render2/Render2.ts'
 import * as RenderEventListeners from '../RenderEventListeners/RenderEventListeners.ts'
 import * as Resize from '../Resize/Resize.ts'
+import * as ScrollWorkers from '../ScrollWorkers/ScrollWorkers.ts'
 import * as SelectWorker from '../SelectWorker/SelectWorker.ts'
 import * as SetComponentState from '../SetComponentState/SetComponentState.ts'
 import * as SetError from '../SetError/SetError.ts'
@@ -34,12 +36,14 @@ export const commandMap = {
   'Workers.getComponentState': GetComponentState.getComponentState,
   'Workers.handleBlur': WorkersStates.wrapCommand(HandleBlur.handleBlur),
   'Workers.handleMessagePort': handleDirectMessagePort,
+  'Workers.handleTableClick': WorkersStates.wrapCommand(HandleTableClick.handleTableClick),
   'Workers.loadContent': WorkersStates.wrapCommand(LoadContent.loadContent),
   'Workers.navigateWorkers': WorkersStates.wrapCommand(NavigateWorkers.navigateWorkers),
   'Workers.refresh': WorkersStates.wrapCommand(RefreshWorkers.refresh),
   'Workers.render2': Render2.render2,
   'Workers.renderEventListeners': RenderEventListeners.renderEventListeners,
   'Workers.resize': WorkersStates.wrapCommand(Resize.resize),
+  'Workers.scrollWorkers': WorkersStates.wrapCommand(ScrollWorkers.scrollWorkers),
   'Workers.selectWorker': WorkersStates.wrapCommand(SelectWorker.selectWorker),
   'Workers.setComponentState': SetComponentState.setComponentState,
   'Workers.setError': WorkersStates.wrapCommand(SetError.setError),

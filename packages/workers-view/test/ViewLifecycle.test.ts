@@ -10,7 +10,7 @@ import * as GetWorkersVirtualDom from '../src/parts/GetWorkersVirtualDom/GetWork
 import * as WorkersStates from '../src/parts/WorkersStates/WorkersStates.ts'
 
 const uid = 7
-const create = (): void => commandMap['Workers.create'](uid, '', 0, 0, 200, 100, PlatformType.Web, '')
+const create = (): void => commandMap['Workers.create'](uid, '', 10, 20, 200, 100, PlatformType.Web, '')
 
 afterEach(() => {
   commandMap['Workers.dispose'](uid)
@@ -28,17 +28,20 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
     height: 100,
     loaded: false,
     platform: PlatformType.Web,
+    scrollTop: 0,
     sortColumn: undefined,
     sortDirection: undefined,
     uid,
     width: 200,
     workers: [],
+    x: 10,
+    y: 20,
   })
   const diff = commandMap['Workers.diff2'](uid)
   expect(diff).toEqual([DiffType.RenderDom, DiffType.RenderCss])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
     [ViewletCommand.SetDom2, uid, GetWorkersVirtualDom.getWorkersVirtualDom([], false, PlatformType.Web)],
-    [ViewletCommand.SetCss, uid, 'width:200px;height:100px;overflow:auto;'],
+    [ViewletCommand.SetCss, uid, 'width:200px;height:100px;overflow:hidden;'],
   ])
 })
 
@@ -108,19 +111,19 @@ test('resizes without losing loaded content', async () => {
   commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
   const previous = { ...WorkersStates.get(uid).newState, loaded: true, workers: [{ id: '1', memory: 0, name: 'Worker', runtimeName: 'Worker [1]' }] }
   WorkersStates.set(uid, previous, previous)
-  await commandMap['Workers.resize'](uid, 450, 300)
-  expect(WorkersStates.get(uid).newState).toEqual({ ...previous, height: 300, width: 450 })
+  await commandMap['Workers.resize'](uid, 20, 30, 450, 300)
+  expect(WorkersStates.get(uid).newState).toEqual({ ...previous, height: 300, width: 450, x: 20, y: 30 })
   expect(previous.width).toBe(200)
   const diff = commandMap['Workers.diff2'](uid)
   expect(diff).toEqual([DiffType.RenderIncremental, DiffType.RenderCss])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
     [ViewletCommand.SetPatches, uid, expect.any(Array)],
-    [ViewletCommand.SetCss, uid, 'width:450px;height:300px;overflow:auto;'],
+    [ViewletCommand.SetCss, uid, 'width:450px;height:300px;overflow:hidden;'],
   ])
   expect(commandMap['Workers.diff2'](uid)).toEqual([DiffType.RenderIncremental])
-  await commandMap['Workers.resize'](uid, 450, 60)
+  await commandMap['Workers.resize'](uid, 20, 30, 450, 60)
   expect(commandMap['Workers.diff2'](uid)).toEqual([DiffType.RenderIncremental, DiffType.RenderCss])
-  expect(commandMap['Workers.render2'](uid, [2])).toEqual([[ViewletCommand.SetCss, uid, 'width:450px;height:60px;overflow:auto;']])
+  expect(commandMap['Workers.render2'](uid, [2])).toEqual([[ViewletCommand.SetCss, uid, 'width:450px;height:60px;overflow:hidden;']])
 })
 
 test('clears focused selection styling on blur', async () => {
@@ -244,7 +247,6 @@ test('sorts memory by default in descending order when its header command is sel
 
 test('registers the sort event handlers without a refresh button handler', () => {
   expect(commandMap['Workers.renderEventListeners']()).toEqual([
-    { name: 4, params: ['selectWorker', 'event.currentTarget.dataset.workerId'], preventDefault: true },
     { name: 5, params: ['navigateWorkers', 'event.key'], preventDefault: false },
     { name: 8, params: ['focusWorkers'], preventDefault: true },
     {
@@ -253,8 +255,8 @@ test('registers the sort event handlers without a refresh button handler', () =>
       preventDefault: true,
     },
     { name: 7, params: ['terminateWorker', 'event.currentTarget.dataset.workerId'], preventDefault: true },
-    { name: 2, params: ['sortByName'], preventDefault: true },
-    { name: 3, params: ['sortByMemory'], preventDefault: true },
+    { name: 9, params: ['handleTableClick', 'event.clientX', 'event.clientY', 'event.currentTarget.clientWidth'], preventDefault: true },
+    { name: 10, params: ['scrollWorkers', 'event.currentTarget.scrollTop'], preventDefault: false },
   ])
 })
 

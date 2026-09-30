@@ -10,11 +10,14 @@ const state = {
   height: 100,
   loaded: true,
   platform: 1,
+  scrollTop: 0,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,
   width: 100,
   workers: [worker('one'), worker('two'), worker('three')],
+  x: 0,
+  y: 0,
 }
 
 test('selects a visible worker and ignores an unknown id', () => {

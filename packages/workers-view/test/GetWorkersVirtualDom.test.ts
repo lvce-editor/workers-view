@@ -116,7 +116,12 @@ test('renders sortable headers and exposes the selected sort direction', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, 'memory', 'descending')
   const headers = nodes.filter((node) => node.className === 'WorkersViewTableHeaderCell')
   expect(headers.map((header) => header['aria-sort'])).toEqual(['none', 'descending'])
-  expect(nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton').map((button) => button.onClick)).toEqual([2, 3])
+  const table = nodes.find((node) => node.className === 'WorkersViewTable')
+  const buttons = nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton')
+  expect(table?.onClick).toBe(9)
+  expect(buttons.map((button) => button.onClick)).toEqual([undefined, undefined])
+  expect(buttons.map((button) => button.onKeyDown)).toEqual([undefined, undefined])
+  expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([undefined])
 })
 
 test('marks the selected worker and renders its right-click action', () => {

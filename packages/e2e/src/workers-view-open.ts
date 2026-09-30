@@ -2,7 +2,7 @@ import type { Test } from '@lvce-editor/test-with-playwright'
 
 export const name = 'workers-view-open'
 
-export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
+export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView }) => {
   await WorkersView.open()
 
   const view = WorkersView.root()
@@ -10,6 +10,11 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   await expect(view).toBeVisible()
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
+  const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
+  const workersComponent = components.find((component) => component.moduleId === 'Workers')
+  if (!workersComponent) {
+    throw new Error('Expected Workers component to exist')
+  }
   const tableInContainer = view.locator('.WorkersViewTableContainer > .WorkersViewTable')
   await expect(tableInContainer).toHaveCount(1)
   await expect(nameHeader).toHaveAttribute('aria-sort', 'none')
@@ -20,14 +25,18 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify a repeated real header click reverses the sort.
   await WorkersView.nameHeaderButton().click()
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '.WorkersViewTableHeaderButton')
+  await KeyBoard.press('Enter')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
+  await KeyBoard.press('Space')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
+  const memoryHeader = view.locator('.WorkersViewTableHeaderCell').nth(1)
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- The table listener resolves the clicked memory column from pointer coordinates.
+  await view.locator('.WorkersViewTableHeaderButton').nth(1).click()
+  await expect(memoryHeader).toHaveAttribute('aria-sort', 'descending')
   await WorkersView.refresh()
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
 
-  const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
-  const workersComponent = components.find((component) => component.moduleId === 'Workers')
-  if (!workersComponent) {
-    throw new Error('Expected Workers component to exist')
-  }
   const workersState = await Command.execute('Workers.getComponentState')
   const workers = Array.from({ length: 40 }, (_, index) => ({
     id: String(index),
@@ -36,7 +45,7 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
     runtimeName: `Worker ${index}`,
   }))
   await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
-  await Command.execute('Workers.resize', 800, 120)
+  await Command.execute('Workers.resize', workersState.x, workersState.y, 800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   await expect(workerRows).toHaveCount(40)
   await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
@@ -49,7 +58,7 @@ export const test: Test = async ({ Command, expect, Main, WorkersView }) => {
   await expect(workerRows.first()).toContainText('Updated Worker')
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
-  await Command.execute('Workers.resize', 800, 800)
+  await Command.execute('Workers.resize', workersState.x, workersState.y, 800, 800)
 
   await Main.closeActiveEditor()
   await WorkersView.open()
