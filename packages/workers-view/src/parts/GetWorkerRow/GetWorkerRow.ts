@@ -28,6 +28,7 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
       childCount: cells.length,
       className,
       'data-workerId': worker.id,
+      onClick: DomEventListenerFunctions.SelectWorker,
       onContextMenu: DomEventListenerFunctions.ShowWorkerContextMenu,
       role: AriaRoles.Row,
       type: VirtualDomElements.Tr,

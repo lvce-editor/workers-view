@@ -4,7 +4,6 @@ import * as SelectWorker from '../SelectWorker/SelectWorker.ts'
 import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
 import * as SortByName from '../SortByName/SortByName.ts'
 
-const TitleHeight = 48
 const ErrorHeight = 30
 const HeaderHeight = 23
 const RowHeight = 22
@@ -17,7 +16,7 @@ export const handleTableClick = (state: WorkersState, clientX: number, clientY: 
   }
   const relativeY = clientY - y
   const columnCount = platform === PlatformType.Electron ? 2 : 1
-  const tableTop = TitleHeight + (error ? ErrorHeight : 0)
+  const tableTop = error ? ErrorHeight : 0
   const headerTop = tableTop
   if (relativeY >= headerTop && relativeY < headerTop + HeaderHeight) {
     const columnIndex = Math.floor((relativeX / tableWidth) * columnCount)
