@@ -10,12 +10,15 @@ const state = {
   height: 100,
   loaded: true,
   platform: 1,
+  scrollTop: 0,
   selectedWorkerId: 'worker-1',
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,
   width: 100,
   workers: [worker],
+  x: 0,
+  y: 0,
 }
 
 const terminate = jest.fn()

@@ -6,11 +6,14 @@ const state = {
   height: 100,
   loaded: false,
   platform: 0,
+  scrollTop: 0,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 7,
   width: 200,
   workers: [],
+  x: 0,
+  y: 0,
 }
 
 test('preserves the message from an Error instance', () => {

@@ -11,11 +11,14 @@ const state = {
   height: 100,
   loaded: false,
   platform: PlatformType.Web,
+  scrollTop: 0,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 7,
   width: 200,
   workers: [],
+  x: 0,
+  y: 0,
 }
 const worker = { id: 'worker-1', name: 'Editor Worker', runtimeName: 'Editor Worker [worker-1]' }
 
