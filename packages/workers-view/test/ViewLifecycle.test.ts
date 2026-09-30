@@ -22,12 +22,14 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
   const { newState, oldState } = WorkersStates.get(uid)
   expect(oldState).toBe(newState)
   expect(newState).toEqual({
+    contextMenuWorkerId: undefined,
     domRendered: false,
     error: undefined,
     hasFocus: false,
     height: 100,
     loaded: false,
     platform: PlatformType.Web,
+    selectedWorkerId: undefined,
     sortColumn: undefined,
     sortDirection: undefined,
     uid,

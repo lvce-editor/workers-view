@@ -14,12 +14,14 @@ export const create = (
 ): void => {
   ViewLifetime.create(uid)
   const state: WorkersState = {
+    contextMenuWorkerId: undefined,
     domRendered: false,
     error: undefined,
     hasFocus: false,
     height,
     loaded: false,
     platform,
+    selectedWorkerId: undefined,
     sortColumn: undefined,
     sortDirection: undefined,
     uid,

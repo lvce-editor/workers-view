@@ -6,7 +6,9 @@ import { terminateWorker } from '../src/parts/TerminateWorker/TerminateWorker.ts
 const worker = { id: 'worker-1', memory: null, name: 'Worker', runtimeName: 'Worker' }
 const state = {
   contextMenuWorkerId: 'worker-1',
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 100,
   loaded: true,
   platform: 1,

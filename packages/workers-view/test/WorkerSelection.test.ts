@@ -6,10 +6,14 @@ import { showWorkerContextMenu } from '../src/parts/ShowWorkerContextMenu/ShowWo
 
 const worker = (id: string): { id: string; memory: null; name: string; runtimeName: string } => ({ id, memory: null, name: id, runtimeName: id })
 const state = {
+  contextMenuWorkerId: undefined,
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 100,
   loaded: true,
   platform: 1,
+  selectedWorkerId: undefined,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 1,

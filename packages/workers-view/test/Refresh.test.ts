@@ -7,10 +7,14 @@ const getWorkers = jest.fn<RefreshServices['getWorkers']>()
 const getMemoryUsages = jest.fn<RefreshServices['getMemoryUsages']>()
 const services: RefreshServices = { getMemoryUsages, getWorkers }
 const state = {
+  contextMenuWorkerId: undefined,
+  domRendered: false,
   error: undefined,
+  hasFocus: false,
   height: 100,
   loaded: false,
   platform: PlatformType.Web,
+  selectedWorkerId: undefined,
   sortColumn: undefined,
   sortDirection: undefined,
   uid: 7,
