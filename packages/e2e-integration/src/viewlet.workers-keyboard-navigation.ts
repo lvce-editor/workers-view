@@ -67,12 +67,12 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   await KeyBoard.press('ArrowUp')
   await expect(rowB).toHaveAttribute('aria-selected', 'true')
 
-  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Exercise actual row selection after keyboard focus.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Exercise actual row selection after keyboard focus.
   await rowA.click()
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
   const nameHeaderButton = table.locator('.WorkersViewTableHeaderButton').first()
   await expect(nameHeaderButton).toHaveText('Name')
-  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Sorting must preserve selection by worker id.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Sorting must preserve selection by worker id.
   await nameHeaderButton.click()
   await expect(rowA).toHaveAttribute('aria-selected', 'true')
 
