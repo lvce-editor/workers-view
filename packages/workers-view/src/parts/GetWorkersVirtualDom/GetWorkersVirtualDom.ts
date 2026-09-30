@@ -12,8 +12,6 @@ import * as WorkersViewStrings from '../WorkersViewStrings/WorkersViewStrings.ts
 const getError = (error: Error | undefined): readonly VirtualDomNode[] =>
   error ? [{ className: 'WorkersViewError', role: AriaRoles.Alert, textContent: error.message, type: VirtualDomElements.P }] : []
 
-const contextMenuContainer = { childCount: 1, className: 'WorkersViewContextMenu', type: VirtualDomElements.Div }
-
 export const getWorkersVirtualDom = (
   workers: readonly DisplayedWorker[],
   loaded: boolean,
@@ -22,7 +20,6 @@ export const getWorkersVirtualDom = (
   sortColumn: 'memory' | 'name' | undefined = undefined,
   sortDirection: 'ascending' | 'descending' | undefined = undefined,
   selectedWorkerId: string | undefined = undefined,
-  contextMenuWorkerId: string | undefined = undefined,
   hasFocus = false,
 ): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
@@ -44,18 +41,6 @@ export const getWorkersVirtualDom = (
     tabIndex: TabIndex.Focusable,
     type: VirtualDomElements.Table,
   }
-  const contextMenu = contextMenuWorkerId
-    ? [
-        contextMenuContainer,
-        {
-          className: 'WorkersViewContextMenuItem',
-          'data-workerId': contextMenuWorkerId,
-          onClick: DomEventListenerFunctions.TerminateWorker,
-          textContent: WorkersViewStrings.terminateWorker(),
-          type: VirtualDomElements.Button,
-        },
-      ]
-    : []
   const errorDom = getError(error)
   const emptyDom = GetEmptyState.getEmptyState(workers, loaded)
   const tableContainer = {
@@ -72,7 +57,6 @@ export const getWorkersVirtualDom = (
     ...columns,
     ...rows,
     ...emptyDom,
-    ...contextMenu,
   ]
-  return [{ childCount: 1 + errorDom.length + Number(contextMenu.length > 0), className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
+  return [{ childCount: 1 + errorDom.length, className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }

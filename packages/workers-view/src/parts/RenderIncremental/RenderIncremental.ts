@@ -12,7 +12,6 @@ export const renderIncremental = (oldState: WorkersState, newState: WorkersState
     oldState.sortColumn,
     oldState.sortDirection,
     oldState.selectedWorkerId,
-    oldState.contextMenuWorkerId,
     oldState.hasFocus,
   )
   const newDom = GetWorkersVirtualDom.getWorkersVirtualDom(
@@ -23,7 +22,6 @@ export const renderIncremental = (oldState: WorkersState, newState: WorkersState
     newState.sortColumn,
     newState.sortDirection,
     newState.selectedWorkerId,
-    newState.contextMenuWorkerId,
     newState.hasFocus,
   )
   return [ViewletCommand.SetPatches, newState.uid, diffTree(oldDom, newDom)]

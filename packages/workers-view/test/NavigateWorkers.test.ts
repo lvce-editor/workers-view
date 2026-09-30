@@ -3,7 +3,6 @@ import type { WorkersState } from '../src/parts/WorkersState/WorkersState.ts'
 import { navigateWorkers } from '../src/parts/NavigateWorkers/NavigateWorkers.ts'
 
 const state = {
-  contextMenuWorkerId: undefined,
   domRendered: false,
   error: undefined,
   hasFocus: false,

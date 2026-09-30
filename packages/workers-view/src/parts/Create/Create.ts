@@ -5,7 +5,6 @@ import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 export const create = (uid: number, _uri: string, x: number, y: number, width: number, height: number, platform: number, _assetDir: string): void => {
   ViewLifetime.create(uid)
   const state: WorkersState = {
-    contextMenuWorkerId: undefined,
     domRendered: false,
     error: undefined,
     hasFocus: false,

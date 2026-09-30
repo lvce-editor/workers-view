@@ -7,7 +7,6 @@ const getWorkers = jest.fn<RefreshServices['getWorkers']>()
 const getMemoryUsages = jest.fn<RefreshServices['getMemoryUsages']>()
 const services: RefreshServices = { getMemoryUsages, getWorkers }
 const state = {
-  contextMenuWorkerId: undefined,
   domRendered: false,
   error: undefined,
   hasFocus: false,

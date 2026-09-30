@@ -4,6 +4,8 @@ import * as Diff2 from '../Diff2/Diff2.ts'
 import * as Dispose from '../Dispose/Dispose.ts'
 import * as FocusWorkers from '../FocusWorkers/FocusWorkers.ts'
 import * as GetComponentState from '../GetComponentState/GetComponentState.ts'
+import * as GetMenuEntries from '../GetMenuEntries/GetMenuEntries.ts'
+import * as GetMenuEntryIds from '../GetMenuEntryIds/GetMenuEntryIds.ts'
 import * as HandleBlur from '../HandleBlur/HandleBlur.ts'
 import * as HandleMessagePort from '../HandleMessagePort/HandleMessagePort.ts'
 import * as HandleTableClick from '../HandleTableClick/HandleTableClick.ts'
@@ -21,6 +23,7 @@ import * as ShowWorkerContextMenu from '../ShowWorkerContextMenu/ShowWorkerConte
 import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
 import * as SortByName from '../SortByName/SortByName.ts'
 import * as SortHeaderByKeyboard from '../SortHeaderByKeyboard/SortHeaderByKeyboard.ts'
+import * as TakeHeapSnapshot from '../TakeHeapSnapshot/TakeHeapSnapshot.ts'
 import * as TerminateWorker from '../TerminateWorker/TerminateWorker.ts'
 import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
@@ -35,6 +38,8 @@ export const commandMap = {
   'Workers.focusWorkers': WorkersStates.wrapCommand(FocusWorkers.focusWorkers),
   'Workers.getCommandIds': WorkersStates.getCommandIds,
   'Workers.getComponentState': GetComponentState.getComponentState,
+  'Workers.getMenuEntries': GetMenuEntries.getMenuEntriesForUid,
+  'Workers.getMenuEntryIds': GetMenuEntryIds.getMenuEntryIds,
   'Workers.handleBlur': WorkersStates.wrapCommand(HandleBlur.handleBlur),
   'Workers.handleMessagePort': handleDirectMessagePort,
   'Workers.handleTableClick': WorkersStates.wrapCommand(HandleTableClick.handleTableClick),
@@ -52,5 +57,6 @@ export const commandMap = {
   'Workers.sortByMemory': WorkersStates.wrapCommand(SortByMemory.sortByMemory),
   'Workers.sortByName': WorkersStates.wrapCommand(SortByName.sortByName),
   'Workers.sortHeaderByKeyboard': WorkersStates.wrapCommand(SortHeaderByKeyboard.sortHeaderByKeyboard),
+  'Workers.takeHeapSnapshot': WorkersStates.wrapCommand(TakeHeapSnapshot.takeHeapSnapshot),
   'Workers.terminateWorker': WorkersStates.wrapCommand(TerminateWorker.terminateWorker),
 }

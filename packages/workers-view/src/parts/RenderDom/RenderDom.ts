@@ -13,7 +13,6 @@ export const renderDom = (_oldState: WorkersState, newState: WorkersState): read
     newState.sortColumn,
     newState.sortDirection,
     newState.selectedWorkerId,
-    newState.contextMenuWorkerId,
     newState.hasFocus,
   ),
 ]

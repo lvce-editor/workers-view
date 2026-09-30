@@ -11,7 +11,6 @@ const workers: readonly DisplayedWorker[] = [
 ]
 
 const state: WorkersState = {
-  contextMenuWorkerId: undefined,
   domRendered: false,
   error: undefined,
   hasFocus: false,

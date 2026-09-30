@@ -5,8 +5,8 @@ import * as RendererProcess from '../RendererProcess/RendererProcess.ts'
 export const terminateWorker = async (state: WorkersState, workerId: string): Promise<WorkersState> => {
   const { workers } = state
   if (workers.every((worker) => worker.id !== workerId)) {
-    return { ...state, contextMenuWorkerId: undefined }
+    return state
   }
   await RendererProcess.invoke('Workers.terminate', workerId)
-  return RefreshWorkers.refresh({ ...state, contextMenuWorkerId: undefined, selectedWorkerId: undefined })
+  return RefreshWorkers.refresh({ ...state, selectedWorkerId: undefined })
 }
