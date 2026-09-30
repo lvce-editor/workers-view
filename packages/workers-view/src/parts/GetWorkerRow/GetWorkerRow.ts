@@ -12,8 +12,8 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
   }
   const cells: VirtualDomNode[] = [
     {
-      'data-contextMenuWorkerId': worker.id,
       className: 'WorkersViewWorkerCell',
+      'data-contextMenuWorkerId': worker.id,
       role: AriaRoles.Cell,
       textContent: worker.name,
       type: VirtualDomElements.Td,
@@ -21,8 +21,8 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
   ]
   if (showMemory) {
     cells.push({
-      'data-contextMenuWorkerId': worker.id,
       className: 'WorkersViewWorkerCell',
+      'data-contextMenuWorkerId': worker.id,
       role: AriaRoles.Cell,
       textContent: GetMemoryText.getMemoryText(worker.memory),
       type: VirtualDomElements.Td,
