@@ -7,6 +7,7 @@ import * as AutoRefresh from '../src/parts/AutoRefresh/AutoRefresh.ts'
 import { commandMap } from '../src/parts/CommandMap/CommandMap.ts'
 import * as DiffType from '../src/parts/DiffType/DiffType.ts'
 import * as GetWorkersVirtualDom from '../src/parts/GetWorkersVirtualDom/GetWorkersVirtualDom.ts'
+import * as WhenExpression from '../src/parts/WhenExpression/WhenExpression.ts'
 import * as WorkersStates from '../src/parts/WorkersStates/WorkersStates.ts'
 
 const uid = 7
@@ -135,6 +136,9 @@ test('clears focused selection styling on blur', async () => {
   await commandMap['Workers.handleBlur'](uid)
 
   expect(WorkersStates.get(uid).newState).toEqual({ ...state, hasFocus: false })
+  const diff = commandMap['Workers.diff2'](uid)
+  expect(diff).toContain(DiffType.RenderFocusContext)
+  expect(commandMap['Workers.render2'](uid, diff)).toContainEqual(['Viewlet.unsetAdditionalFocus', uid, WhenExpression.FocusWorkers])
 })
 
 test('exposes and updates the current component state', async () => {
@@ -245,7 +249,7 @@ test('sorts memory by default in descending order when its header command is sel
 
 test('registers the sort event handlers without a refresh button handler', () => {
   expect(commandMap['Workers.renderEventListeners']()).toEqual([
-    { name: 5, params: ['navigateWorkers', 'event.key'], preventDefault: false },
+    { name: 13, params: ['handleBlur'], preventDefault: false },
     { name: 8, params: ['focusWorkers'], preventDefault: true },
     {
       name: 6,

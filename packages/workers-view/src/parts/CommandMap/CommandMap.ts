@@ -4,6 +4,7 @@ import * as Diff2 from '../Diff2/Diff2.ts'
 import * as Dispose from '../Dispose/Dispose.ts'
 import * as FocusWorkers from '../FocusWorkers/FocusWorkers.ts'
 import * as GetComponentState from '../GetComponentState/GetComponentState.ts'
+import * as GetKeyBindings from '../GetKeyBindings/GetKeyBindings.ts'
 import * as GetMenuEntries from '../GetMenuEntries/GetMenuEntries.ts'
 import * as GetMenuEntryIds from '../GetMenuEntryIds/GetMenuEntryIds.ts'
 import * as HandleBlur from '../HandleBlur/HandleBlur.ts'
@@ -35,16 +36,20 @@ export const commandMap = {
   'Workers.create': Create.create,
   'Workers.diff2': Diff2.diff2,
   'Workers.dispose': Dispose.dispose,
+  'Workers.focusFirst': WorkersStates.wrapCommand(NavigateWorkers.focusFirst),
+  'Workers.focusLast': WorkersStates.wrapCommand(NavigateWorkers.focusLast),
+  'Workers.focusNext': WorkersStates.wrapCommand(NavigateWorkers.focusNext),
+  'Workers.focusPrevious': WorkersStates.wrapCommand(NavigateWorkers.focusPrevious),
   'Workers.focusWorkers': WorkersStates.wrapCommand(FocusWorkers.focusWorkers),
   'Workers.getCommandIds': WorkersStates.getCommandIds,
   'Workers.getComponentState': GetComponentState.getComponentState,
+  'Workers.getKeyBindings': GetKeyBindings.getKeyBindings,
   'Workers.getMenuEntries': GetMenuEntries.getMenuEntriesForUid,
   'Workers.getMenuEntryIds': GetMenuEntryIds.getMenuEntryIds,
   'Workers.handleBlur': WorkersStates.wrapCommand(HandleBlur.handleBlur),
   'Workers.handleMessagePort': handleDirectMessagePort,
   'Workers.handleTableClick': WorkersStates.wrapCommand(HandleTableClick.handleTableClick),
   'Workers.loadContent': WorkersStates.wrapCommand(LoadContent.loadContent),
-  'Workers.navigateWorkers': WorkersStates.wrapCommand(NavigateWorkers.navigateWorkers),
   'Workers.refresh': WorkersStates.wrapCommand(RefreshWorkers.refresh),
   'Workers.render2': Render2.render2,
   'Workers.renderEventListeners': RenderEventListeners.renderEventListeners,
