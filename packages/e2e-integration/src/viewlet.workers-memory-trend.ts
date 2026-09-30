@@ -18,11 +18,10 @@ interface WorkersState {
 }
 
 export const name = 'viewlet.workers-memory-trend'
-const growingTrendLabel = /Memory growing at/
 
 export const test: Test = async ({ Command, expect, Locator, QuickPick }) => {
   const preference = 'workers.memoryUsageTrend.enabled'
-  await Command.execute('Preferences.update', { [preference]: false })
+  await Command.execute('Preferences.update', { [preference]: true })
   await QuickPick.open()
   await QuickPick.setValue('>workers')
   await QuickPick.selectItem('Developer: Open Workers View')
@@ -33,21 +32,18 @@ export const test: Test = async ({ Command, expect, Locator, QuickPick }) => {
   const component = components.find((item) => item.moduleId === 'Workers')
   if (!component) throw new Error('Expected the Workers component to be open')
 
-  await Command.execute('Preferences.update', { [preference]: true })
   await Command.execute('Workers.refresh', component.uid)
   const state = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
   const { workers } = state
-  const worker = workers.find((item) => typeof item.memory === 'number' && item.memory > 1000)
-  if (!worker || worker.memory === null) throw new Error('Expected an Electron worker with a readable heap measurement')
-
+  expect(workers.every((item) => item.memory === null)).toBe(true)
   await Command.execute('ComponentState.setState', component.uid, {
     ...state,
-    memorySamples: [{ id: worker.id, memory: worker.memory - 1000, timestamp: Date.now() - 10_000 }],
+    memorySamples: [{ id: 'stale-worker', memory: 1000, timestamp: Date.now() - 10_000 }],
   })
   await Command.execute('Workers.refresh', component.uid)
-  const growingTrend = Locator('.WorkersViewMemoryTrendGrowing')
-  await expect(growingTrend).toBeVisible()
-  await expect(growingTrend).toHaveAttribute('aria-label', growingTrendLabel)
+  await expect(Locator('.WorkersViewMemoryTrend')).toHaveCount(0)
+  const unavailableState = (await Command.execute('ComponentState.getState', component.uid)) as WorkersState
+  expect(unavailableState.memorySamples).toEqual([])
 
   await Command.execute('Preferences.update', { [preference]: false })
   await Command.execute('Workers.refresh', component.uid)
