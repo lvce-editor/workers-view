@@ -249,7 +249,7 @@ test('registers the sort event handlers without a refresh button handler', () =>
     { name: 8, params: ['focusWorkers'], preventDefault: true },
     {
       name: 6,
-      params: ['showWorkerContextMenu', 'event.currentTarget.dataset.workerId', 'event.clientX', 'event.clientY'],
+      params: ['showWorkerContextMenu', 'event.target.dataset.contextMenuWorkerId', 'event.clientX', 'event.clientY'],
       preventDefault: true,
     },
     {

@@ -11,10 +11,17 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
     className += hasFocus ? ' WorkersViewWorkerRowFocused' : ' WorkersViewWorkerRowBlurred'
   }
   const cells: VirtualDomNode[] = [
-    { className: 'WorkersViewWorkerCell', role: AriaRoles.Cell, textContent: worker.name, type: VirtualDomElements.Td },
+    {
+      'data-contextMenuWorkerId': worker.id,
+      className: 'WorkersViewWorkerCell',
+      role: AriaRoles.Cell,
+      textContent: worker.name,
+      type: VirtualDomElements.Td,
+    },
   ]
   if (showMemory) {
     cells.push({
+      'data-contextMenuWorkerId': worker.id,
       className: 'WorkersViewWorkerCell',
       role: AriaRoles.Cell,
       textContent: GetMemoryText.getMemoryText(worker.memory),
@@ -27,9 +34,9 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
       ariaLabel: worker.name,
       childCount: cells.length,
       className,
+      'data-contextMenuWorkerId': worker.id,
       'data-workerId': worker.id,
       onClick: DomEventListenerFunctions.SelectWorker,
-      onContextMenu: DomEventListenerFunctions.ShowWorkerContextMenu,
       role: AriaRoles.Row,
       type: VirtualDomElements.Tr,
     },

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -41,6 +41,8 @@ try {
     Object.fromEntries(['CONFIG', 'DATA', 'STATE', 'CACHE'].map((key) => [key, process.env[`XDG_${key}_HOME`]])),
   )
   for (const key of ['CONFIG', 'DATA', 'STATE', 'CACHE']) assert.equal(childEnv[key], join(profile, key.toLowerCase()))
+  const downloads = join(profile, 'downloads')
+  await app.evaluate(({ app }, path) => app.setPath('downloads', path), downloads)
   const page = await app.firstWindow()
   page.setDefaultTimeout(15000)
   await expect(page.locator('#Workbench')).toBeVisible({ timeout: 60000 })
@@ -101,7 +103,22 @@ try {
   await open()
   await expect.poll(async () => (await counts()).evaluate).toBeGreaterThan(closed.evaluate)
   await close()
+  await open()
+  const workerViewRow = page.locator('.WorkersViewWorkerRow').filter({ hasText: 'Workers View Worker' })
+  await expect(workerViewRow).toBeVisible()
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Open the worker's real context menu.
+  await workerViewRow.click({ button: 'right' })
+  const takeHeapSnapshot = page.getByRole('menuitem', { name: 'Take Heap Snapshot', exact: true })
+  await expect(takeHeapSnapshot).toBeVisible()
+  await takeHeapSnapshot.click()
+  await expect(page.locator('.MainTabSelected[title$=".heapsnapshot"]')).toBeVisible({ timeout: 60000 })
+  const snapshots = (await readdir(downloads)).filter((name) => name.endsWith('.heapsnapshot'))
+  assert.equal(snapshots.length, 1)
+  const snapshot = JSON.parse(await readFile(join(downloads, snapshots[0]), 'utf8'))
+  assert.ok(snapshot.snapshot.meta.node_fields.includes('name'))
+  assert.ok(snapshot.nodes.length > 0)
   console.log(`PASS: ${first.evaluate} worker names evaluated once; repeated heap polling, automatic refresh, close, and reopen verified`)
+  console.log('PASS: Electron context menu opened a heap snapshot for the Workers View worker')
 } finally {
   try {
     await app?.close()

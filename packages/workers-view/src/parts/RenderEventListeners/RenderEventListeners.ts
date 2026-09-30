@@ -13,7 +13,7 @@ export const renderEventListeners = (): readonly any[] => [
   },
   {
     name: DomEventListenerFunctions.ShowWorkerContextMenu,
-    params: ['showWorkerContextMenu', 'event.currentTarget.dataset.workerId', 'event.clientX', 'event.clientY'],
+    params: ['showWorkerContextMenu', 'event.target.dataset.contextMenuWorkerId', 'event.clientX', 'event.clientY'],
     preventDefault: true,
   },
   {

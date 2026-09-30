@@ -35,6 +35,7 @@ export const getWorkersVirtualDom = (
     childCount: workers.length + 1,
     className: 'WorkersViewTable',
     onClick: DomEventListenerFunctions.TableClick,
+    onContextMenu: DomEventListenerFunctions.ShowWorkerContextMenu,
     onFocus: DomEventListenerFunctions.FocusWorkers,
     onKeyDown: DomEventListenerFunctions.NavigateWorkers,
     role: AriaRoles.Table,

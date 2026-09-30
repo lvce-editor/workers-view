@@ -1,5 +1,6 @@
 import { PlatformType } from '@lvce-editor/constants'
-import { MainProcess, RendererWorker } from '@lvce-editor/rpc-registry'
+import { LazyTransferMessagePortRpcParent } from '@lvce-editor/rpc'
+import { RendererWorker } from '@lvce-editor/rpc-registry'
 import type { WorkersState } from '../WorkersState/WorkersState.ts'
 
 export const takeHeapSnapshot = async (state: WorkersState, workerId: string): Promise<WorkersState> => {
@@ -7,7 +8,22 @@ export const takeHeapSnapshot = async (state: WorkersState, workerId: string): P
   const worker = workers.find((item) => item.id === workerId)
   if (!worker || platform !== PlatformType.Electron) return state
   const windowId = await RendererWorker.getWindowId()
-  const uri = await MainProcess.invoke('ElectronDeveloper.takeWorkerHeapSnapshot', windowId, worker.runtimeName)
-  await RendererWorker.invoke('Main.openUri', uri)
+  const rpc = await LazyTransferMessagePortRpcParent.create({
+    commandMap: {},
+    async send(port) {
+      await RendererWorker.invokeAndTransfer(
+        'SendMessagePortToMainProcess.sendMessagePortToMainProcess',
+        port,
+        'HandleElectronMessagePort.handleElectronMessagePort',
+        0,
+      )
+    },
+  })
+  try {
+    const uri = await rpc.invoke('ElectronDeveloper.takeWorkerHeapSnapshot', windowId, worker.name)
+    await RendererWorker.invoke('Main.openUri', uri)
+  } finally {
+    await rpc.dispose()
+  }
   return state
 }
