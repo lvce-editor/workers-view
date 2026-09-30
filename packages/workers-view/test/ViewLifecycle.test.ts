@@ -255,8 +255,18 @@ test('registers the sort event handlers without a refresh button handler', () =>
       preventDefault: true,
     },
     { name: 7, params: ['terminateWorker', 'event.currentTarget.dataset.workerId'], preventDefault: true },
-    { name: 9, params: ['handleTableClick', 'event.clientX', 'event.clientY', 'event.currentTarget.clientWidth'], preventDefault: true },
+    {
+      name: 9,
+      params: ['handleTableClick', 'event.clientX', 'event.clientY', 'event.currentTarget.clientWidth'],
+      preventDefault: true,
+    },
     { name: 10, params: ['scrollWorkers', 'event.currentTarget.scrollTop'], preventDefault: false },
+    {
+      name: 11,
+      params: ['sortHeaderByKeyboard', 'event.key', 'event.currentTarget.dataset.sortColumn'],
+      preventDefault: true,
+      stopPropagation: true,
+    },
   ])
 })
 

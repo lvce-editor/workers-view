@@ -4,3 +4,4 @@ export const TerminateWorker = 7
 export const FocusWorkers = 8
 export const TableClick = 9
 export const ScrollWorkers = 10
+export const SortHeaderByKeyboard = 11

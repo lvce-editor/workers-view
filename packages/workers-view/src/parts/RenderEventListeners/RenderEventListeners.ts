@@ -31,4 +31,10 @@ export const renderEventListeners = (): readonly any[] => [
     params: ['scrollWorkers', 'event.currentTarget.scrollTop'],
     preventDefault: false,
   },
+  {
+    name: DomEventListenerFunctions.SortHeaderByKeyboard,
+    params: ['sortHeaderByKeyboard', 'event.key', 'event.currentTarget.dataset.sortColumn'],
+    preventDefault: true,
+    stopPropagation: true,
+  },
 ]

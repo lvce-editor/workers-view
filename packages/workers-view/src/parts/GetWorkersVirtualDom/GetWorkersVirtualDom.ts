@@ -35,6 +35,8 @@ export const getWorkersVirtualDom = (
     },
     {
       className: 'WorkersViewTableHeaderButton',
+      'data-sortColumn': column,
+      onKeyDown: DomEventListenerFunctions.SortHeaderByKeyboard,
       textContent,
       type: VirtualDomElements.Button,
     },

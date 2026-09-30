@@ -20,6 +20,7 @@ import * as SetError from '../SetError/SetError.ts'
 import * as ShowWorkerContextMenu from '../ShowWorkerContextMenu/ShowWorkerContextMenu.ts'
 import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
 import * as SortByName from '../SortByName/SortByName.ts'
+import * as SortHeaderByKeyboard from '../SortHeaderByKeyboard/SortHeaderByKeyboard.ts'
 import * as TerminateWorker from '../TerminateWorker/TerminateWorker.ts'
 import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
@@ -50,5 +51,6 @@ export const commandMap = {
   'Workers.showWorkerContextMenu': WorkersStates.wrapCommand(ShowWorkerContextMenu.showWorkerContextMenu),
   'Workers.sortByMemory': WorkersStates.wrapCommand(SortByMemory.sortByMemory),
   'Workers.sortByName': WorkersStates.wrapCommand(SortByName.sortByName),
+  'Workers.sortHeaderByKeyboard': WorkersStates.wrapCommand(SortHeaderByKeyboard.sortHeaderByKeyboard),
   'Workers.terminateWorker': WorkersStates.wrapCommand(TerminateWorker.terminateWorker),
 }

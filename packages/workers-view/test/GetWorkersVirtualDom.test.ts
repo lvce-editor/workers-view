@@ -120,7 +120,8 @@ test('renders sortable headers and exposes the selected sort direction', () => {
   const buttons = nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton')
   expect(table?.onClick).toBe(9)
   expect(buttons.map((button) => button.onClick)).toEqual([undefined, undefined])
-  expect(buttons.map((button) => button.onKeyDown)).toEqual([undefined, undefined])
+  expect(buttons.map((button) => button.onKeyDown)).toEqual([11, 11])
+  expect(buttons.map((button) => button['data-sortColumn'])).toEqual(['name', 'memory'])
   expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([undefined])
 })
 

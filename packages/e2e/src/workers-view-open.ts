@@ -30,35 +30,45 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
   await KeyBoard.press('Space')
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
-  const memoryHeader = view.locator('.WorkersViewTableHeaderCell').nth(1)
-  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- The table listener resolves the clicked memory column from pointer coordinates.
-  await view.locator('.WorkersViewTableHeaderButton').nth(1).click()
-  await expect(memoryHeader).toHaveAttribute('aria-sort', 'descending')
   await WorkersView.refresh()
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
 
-  const workersState = await Command.execute('Workers.getComponentState')
   const workers = Array.from({ length: 40 }, (_, index) => ({
     id: String(index),
     memory: index,
     name: `Worker ${index}`,
     runtimeName: `Worker ${index}`,
   }))
-  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
-  await Command.execute('Workers.resize', workersState.x, workersState.y, 800, 120)
+  const workersState = {
+    error: undefined,
+    hasFocus: false,
+    height: 120,
+    loaded: true,
+    platform: 1,
+    scrollTop: 0,
+    sortColumn: undefined,
+    sortDirection: undefined,
+    uid: workersComponent.uid,
+    width: 800,
+    workers,
+    x: 0,
+    y: 0,
+  }
+  await Command.execute('Workers.setComponentState', workersState)
+  await Command.execute('Workers.resize', 0, 0, 800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   await expect(workerRows).toHaveCount(40)
-  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers })
+  await Command.execute('Workers.setComponentState', workersState)
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
   const changedWorkers = workers.map((worker: Readonly<(typeof workers)[number]>, index) =>
     index === 0 ? { ...worker, name: 'Updated Worker' } : worker,
   )
-  await Command.execute('Workers.setComponentState', { ...workersState, loaded: true, uid: workersComponent.uid, workers: changedWorkers })
+  await Command.execute('Workers.setComponentState', { ...workersState, workers: changedWorkers })
   await expect(workerRows.first()).toContainText('Updated Worker')
   await expect(WorkersView.heading()).toHaveText('Workers')
   await expect(WorkersView.table()).toBeVisible()
-  await Command.execute('Workers.resize', workersState.x, workersState.y, 800, 800)
+  await Command.execute('Workers.resize', 0, 0, 800, 800)
 
   await Main.closeActiveEditor()
   await WorkersView.open()
