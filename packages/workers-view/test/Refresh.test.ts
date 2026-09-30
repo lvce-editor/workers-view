@@ -43,7 +43,7 @@ test('returns names without requesting measurements on web', async () => {
 
 test('attributes heap measurements to each registered worker in Electron', async () => {
   getWorkers.mockResolvedValue([worker, { ...worker, id: 'worker-2', runtimeName: 'Editor Worker [worker-2]' }])
-  getMemoryUsages.mockResolvedValueOnce(new Map([[worker.runtimeName, { usedSize: 4096 }]]))
+  getMemoryUsages.mockResolvedValueOnce({ [worker.runtimeName]: { usedSize: 4096 } })
 
   const result = await refresh({ ...state, platform: PlatformType.Electron }, services)
 
@@ -60,7 +60,7 @@ test('keeps unavailable measurements distinct from zero when measurement fails',
 })
 
 test('rejects invalid heap sizes as unavailable', async () => {
-  getMemoryUsages.mockResolvedValue(new Map([[worker.runtimeName, { usedSize: NaN }]]))
+  getMemoryUsages.mockResolvedValue({ [worker.runtimeName]: { usedSize: NaN } })
 
   const result = await refresh({ ...state, platform: PlatformType.Electron }, services)
 

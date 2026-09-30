@@ -1,13 +1,13 @@
-const controllers = new Map<number, AbortController>()
+const controllers: Record<number, AbortController> = Object.create(null) as Record<number, AbortController>
 
 export const dispose = (uid: number): void => {
-  controllers.get(uid)?.abort()
-  controllers.delete(uid)
+  controllers[uid]?.abort()
+  delete controllers[uid]
 }
 
 export const create = (uid: number): void => {
   dispose(uid)
-  controllers.set(uid, new AbortController())
+  controllers[uid] = new AbortController()
 }
 
-export const get = (uid: number): AbortSignal | undefined => controllers.get(uid)?.signal
+export const get = (uid: number): AbortSignal | undefined => controllers[uid]?.signal

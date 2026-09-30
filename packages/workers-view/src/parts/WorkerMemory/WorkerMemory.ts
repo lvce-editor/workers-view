@@ -13,23 +13,26 @@ interface Usage {
 }
 interface Connection {
   readonly controller: AbortController
-  pending?: Promise<ReadonlyMap<string, Usage>> | undefined
+  pending?: Promise<Readonly<Record<string, Usage>>> | undefined
   readonly port: MessagePort
   readonly remotePort: MessagePort
   rpc?: Promise<Rpc>
-  readonly sessions: Map<string, Session>
+  readonly sessionOrder: string[]
+  readonly sessions: Record<string, Session>
 }
 
-const connections = new Map<number, Connection>()
+const createDictionary = <T>(): Record<string, T> => Object.create(null) as Record<string, T>
+
+const connections: Record<number, Connection> = createDictionary()
 
 export const dispose = (uid: number): void => {
-  const connection = connections.get(uid)
+  const connection = connections[uid]
   if (!connection) return
-  connections.delete(uid)
+  delete connections[uid]
   connection.controller.abort()
   connection.port.close()
   connection.remotePort.close()
-  connection.sessions.clear()
+  connection.sessionOrder.length = 0
 }
 
 // The connection owns mutable port and session state.
@@ -53,13 +56,14 @@ const create = (uid: number): Connection => {
     controller: new AbortController(),
     port: port1,
     remotePort: port2,
-    sessions: new Map(),
+    sessionOrder: [],
+    sessions: createDictionary(),
   }
-  connections.set(uid, connection)
+  connections[uid] = connection
   port1.addEventListener(
     'close',
     () => {
-      if (connections.get(uid) === connection) dispose(uid)
+      if (connections[uid] === connection) dispose(uid)
     },
     { once: true },
   )
@@ -72,47 +76,51 @@ type Invoke = <T>(method: string, ...args: readonly unknown[]) => Promise<T>
 // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
 const synchronizeSessions = async (connection: Connection, invoke: Invoke): Promise<void> => {
   const targetIds = await invoke<readonly string[]>('WorkerMemory.getTargets')
-  const targets = new Set(targetIds)
+  const targets = createDictionary<boolean>()
+  for (const targetId of targetIds) targets[targetId] = true
   const removed: string[] = []
-  for (const [targetId, session] of connection.sessions) {
-    if (targets.has(targetId)) {
-      continue
-    }
-
-    connection.sessions.delete(targetId)
+  for (const targetId of connection.sessionOrder) {
+    if (Object.hasOwn(targets, targetId)) continue
+    const session = connection.sessions[targetId]
+    delete connection.sessions[targetId]
     removed.push(session.sessionId)
   }
+  const retained = connection.sessionOrder.filter((targetId) => Object.hasOwn(targets, targetId))
+  connection.sessionOrder.splice(0, connection.sessionOrder.length, ...retained)
   if (removed.length > 0) await invoke('WorkerMemory.detach', removed)
-  const added = targetIds.filter((targetId) => !connection.sessions.has(targetId))
+  const added = targetIds.filter((targetId) => !Object.hasOwn(connection.sessions, targetId))
   if (added.length > 0) {
     const sessions = await invoke<readonly (Session | null)[]>('WorkerMemory.attach', added)
     for (const session of sessions) {
-      if (session) connection.sessions.set(session.targetId, session)
+      if (!session) continue
+      if (!Object.hasOwn(connection.sessions, session.targetId)) connection.sessionOrder.push(session.targetId)
+      connection.sessions[session.targetId] = session
     }
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-const query = async (connection: Connection): Promise<ReadonlyMap<string, Usage>> => {
+const query = async (connection: Connection): Promise<Readonly<Record<string, Usage>>> => {
   const rpc = await waitForResult(connection.controller.signal, connection.rpc!)
   const invoke = <T>(method: string, ...args: readonly unknown[]): Promise<T> => {
     connection.controller.signal.throwIfAborted()
     return waitForResult(connection.controller.signal, rpc.invoke(method, ...args))
   }
   await synchronizeSessions(connection, invoke)
-  const sessions = connection.sessions.values().toArray()
+  const sessions = connection.sessionOrder.map((targetId) => connection.sessions[targetId])
   const usages = await invoke<readonly (Usage | null)[]>(
     'WorkerMemory.getHeapUsages',
     sessions.map((session) => session.sessionId),
   )
-  const result = new Map<string, Usage>()
+  const result = createDictionary<Usage>()
   const failed: string[] = []
   for (const [index, session] of sessions.entries()) {
     const usage = usages[index]
     if (usage && Number.isFinite(usage.usedSize)) {
-      result.set(session.runtimeName, usage)
+      result[session.runtimeName] = usage
     } else {
-      connection.sessions.delete(session.targetId)
+      delete connection.sessions[session.targetId]
+      connection.sessionOrder.splice(connection.sessionOrder.indexOf(session.targetId), 1)
       failed.push(session.sessionId)
     }
   }
@@ -121,19 +129,19 @@ const query = async (connection: Connection): Promise<ReadonlyMap<string, Usage>
 }
 
 // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-const runQuery = async (uid: number, connection: Connection): Promise<ReadonlyMap<string, Usage>> => {
+const runQuery = async (uid: number, connection: Connection): Promise<Readonly<Record<string, Usage>>> => {
   try {
     return await query(connection)
   } catch (error) {
-    if (connections.get(uid) === connection) dispose(uid)
+    if (connections[uid] === connection) dispose(uid)
     throw error
   } finally {
     connection.pending = undefined
   }
 }
 
-export const getMemoryUsages = (uid: number): Promise<ReadonlyMap<string, Usage>> => {
-  const connection = connections.get(uid) || create(uid)
+export const getMemoryUsages = (uid: number): Promise<Readonly<Record<string, Usage>>> => {
+  const connection = connections[uid] || create(uid)
   connection.pending ||= runQuery(uid, connection)
   return connection.pending
 }

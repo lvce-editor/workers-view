@@ -45,12 +45,10 @@ afterEach(() => {
 test('caches names and sessions while batching each refresh over one dedicated port', async () => {
   const { attach, getHeapUsages, send } = fixture()
   for (let i = 0; i < 3; i++) {
-    expect(await WorkerMemory.getMemoryUsages(7)).toEqual(
-      new Map([
-        ['Worker a', { usedSize: 1024 }],
-        ['Worker b', { usedSize: 1024 }],
-      ]),
-    )
+    expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
+      'Worker a': { usedSize: 1024 },
+      'Worker b': { usedSize: 1024 },
+    })
   }
   expect(send).toHaveBeenCalledTimes(1)
   expect(send).toHaveBeenCalledWith(expect.any(MessagePort), 'WorkerMemory.handleMessagePort', 42)
@@ -63,12 +61,10 @@ test('discovers added workers and releases removed workers without reevaluating 
   const { attach, detach, getTargets } = fixture()
   await WorkerMemory.getMemoryUsages(7)
   getTargets.mockResolvedValue(['b', 'c'])
-  expect(await WorkerMemory.getMemoryUsages(7)).toEqual(
-    new Map([
-      ['Worker b', { usedSize: 1024 }],
-      ['Worker c', { usedSize: 1024 }],
-    ]),
-  )
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
+    'Worker b': { usedSize: 1024 },
+    'Worker c': { usedSize: 1024 },
+  })
   expect(attach.mock.calls).toEqual([[['a', 'b']], [['c']]])
   expect(detach).toHaveBeenCalledWith(['session-a'])
 })
@@ -94,7 +90,7 @@ test('coalesces overlapping requests and closes the port on disposal', async () 
 test('retries a failed session without disturbing successful measurements', async () => {
   const { attach, detach, getHeapUsages } = fixture()
   getHeapUsages.mockResolvedValueOnce([null, { usedSize: 0 }])
-  expect(await WorkerMemory.getMemoryUsages(7)).toEqual(new Map([['Worker b', { usedSize: 0 }]]))
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({ 'Worker b': { usedSize: 0 } })
   expect(detach).toHaveBeenCalledWith(['session-a'])
   await WorkerMemory.getMemoryUsages(7)
   expect(attach.mock.calls).toEqual([[['a', 'b']], [['a']]])
@@ -148,7 +144,39 @@ test('cancels initialization before transferring the port if the view closes', a
 test('ignores targets that disappear during attachment', async () => {
   const { attach } = fixture()
   attach.mockResolvedValueOnce([null] as any)
-  expect(await WorkerMemory.getMemoryUsages(7)).toEqual(new Map())
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual(Object.create(null))
+})
+
+test('safely handles prototype property names as targets and worker names', async () => {
+  const { attach, getTargets } = fixture()
+  getTargets.mockResolvedValue(['__proto__', 'constructor'])
+  attach.mockResolvedValue([
+    { runtimeName: '__proto__', sessionId: 'session-proto', targetId: '__proto__' },
+    { runtimeName: 'constructor', sessionId: 'session-constructor', targetId: 'constructor' },
+  ])
+
+  const usages = await WorkerMemory.getMemoryUsages(7)
+
+  expect(Object.getPrototypeOf(usages)).toBeNull()
+  expect(Object.hasOwn(usages, '__proto__')).toBe(true)
+  expect(usages.__proto__).toEqual({ usedSize: 1024 })
+  expect(usages.constructor).toEqual({ usedSize: 1024 })
+})
+
+test('keeps heap results aligned with sessions when target names are integer-like', async () => {
+  const { attach, getHeapUsages, getTargets } = fixture()
+  getTargets.mockResolvedValue(['10', '2'])
+  attach.mockResolvedValue([
+    { runtimeName: '10', sessionId: 'session-10', targetId: '10' },
+    { runtimeName: '2', sessionId: 'session-2', targetId: '2' },
+  ])
+  getHeapUsages.mockResolvedValueOnce([{ usedSize: 10 }, { usedSize: 2 }])
+
+  const usages = await WorkerMemory.getMemoryUsages(7)
+
+  expect(getHeapUsages).toHaveBeenCalledWith(['session-10', 'session-2'])
+  expect(usages['10']).toEqual({ usedSize: 10 })
+  expect(usages['2']).toEqual({ usedSize: 2 })
 })
 
 test('reconnects after the main process closes the port', async () => {

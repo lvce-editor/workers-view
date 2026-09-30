@@ -4,7 +4,7 @@ import * as SortWorkers from '../SortWorkers/SortWorkers.ts'
 import * as ToError from '../ToError/ToError.ts'
 
 export interface RefreshServices {
-  readonly getMemoryUsages: () => Promise<ReadonlyMap<string, { readonly usedSize: number }>>
+  readonly getMemoryUsages: () => Promise<Readonly<Record<string, { readonly usedSize: number }>>>
   readonly getWorkers: () => Promise<readonly TrackedWorker[]>
 }
 
@@ -16,7 +16,7 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
   } catch (error) {
     return { ...state, error: ToError.toError(error), loaded: true }
   }
-  let usages: ReadonlyMap<string, { readonly usedSize: number }> = new Map()
+  let usages: Readonly<Record<string, { readonly usedSize: number }>> = Object.create(null) as Record<string, { readonly usedSize: number }>
   if (platform === PlatformType.Electron) {
     try {
       usages = await services.getMemoryUsages()
@@ -25,7 +25,7 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
     }
   }
   const displayedWorkers = workers.map((worker) => {
-    const usage = usages.get(worker.runtimeName)
+    const usage = Object.hasOwn(usages, worker.runtimeName) ? usages[worker.runtimeName] : undefined
     const memory = usage && Number.isFinite(usage.usedSize) ? usage.usedSize : null
     return { ...worker, memory }
   })
