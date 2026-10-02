@@ -50,13 +50,15 @@ try {
     const window = BrowserWindow.getAllWindows()[0]
     const debuggerApi = window.webContents.debugger
     const original = debuggerApi.sendCommand.bind(debuggerApi)
-    const counts = { attach: 0, detach: 0, evaluate: 0, heap: 0 }
+    const counts = { attach: 0, detach: 0, evaluate: 0, heap: 0, traceStart: 0, traceEnd: 0 }
     globalThis.workerMemoryCounts = counts
     debuggerApi.sendCommand = (method, ...args) => {
       if (method === 'Target.attachToTarget') counts.attach++
       if (method === 'Target.detachFromTarget') counts.detach++
       if (method === 'Runtime.evaluate') counts.evaluate++
       if (method === 'Runtime.getHeapUsage') counts.heap++
+      if (method === 'Tracing.start') counts.traceStart++
+      if (method === 'Tracing.end') counts.traceEnd++
       return original(method, ...args)
     }
   })
@@ -95,6 +97,47 @@ try {
   assert.equal(repeated.detach, 0, 'polling must not detach debugger sessions')
   await expect.poll(async () => (await counts()).heap).toBeGreaterThan(repeated.heap)
   assert.equal((await counts()).evaluate, first.evaluate, 'automatic refresh must also reuse cached names')
+  assert.equal(repeated.traceStart, first.traceStart, 'steady CPU polling must not start more traces')
+  assert.equal(repeated.traceEnd, repeated.traceStart, 'discovery trace must have ended')
+  await expect(page.getByRole('button', { name: 'CPU (%)', exact: true })).toBeVisible()
+  const target = await app.evaluate(async ({ BrowserWindow }) => {
+    const debuggerApi = BrowserWindow.getAllWindows()[0].webContents.debugger
+    const { targetInfos } = await debuggerApi.sendCommand('Target.getTargets')
+    const workers = targetInfos.filter((target) => target.type === 'worker' && /^\[worker-\d+\]/.test(target.title))
+    const busy = workers.find((target) => !target.title.includes('Workers View Worker'))
+    const idle = workers.find((target) => target.title.includes('Workers View Worker'))
+    if (!busy || !idle) throw new Error('Expected two independently tracked workers')
+    const { sessionId } = await debuggerApi.sendCommand('Target.attachToTarget', { targetId: busy.targetId, flatten: true })
+    const { exceptionDetails } = await debuggerApi.sendCommand(
+      'Runtime.evaluate',
+      {
+        expression:
+          'globalThis.__cpuAcceptanceTimer = setInterval(() => { const end = performance.now() + 70; while (performance.now() < end) {} }, 100)',
+      },
+      sessionId,
+    )
+    if (exceptionDetails) throw new Error('Could not start worker CPU workload')
+    return { busyId: busy.title.match(/^\[([^\]]+)\]/)[1], idleId: idle.title.match(/^\[([^\]]+)\]/)[1], sessionId }
+  })
+  const busyCpu = page.locator(`[data-worker-id="${target.busyId}"] .WorkersViewWorkerCell`).nth(2)
+  const idleCpu = page.locator(`[data-worker-id="${target.idleId}"] .WorkersViewWorkerCell`).nth(2)
+  try {
+    await expect.poll(async () => Number(await busyCpu.textContent())).toBeGreaterThan(30)
+    await expect.poll(async () => Number(await idleCpu.textContent())).toBeLessThan(20)
+    console.log(`PASS: live CPU cells busy=${await busyCpu.textContent()}%, idle=${await idleCpu.textContent()}%`)
+    if (process.env.LVCE_CPU_SCREENSHOT) await page.screenshot({ path: process.env.LVCE_CPU_SCREENSHOT })
+  } finally {
+    await app.evaluate(async ({ BrowserWindow }, sessionId) => {
+      const debuggerApi = BrowserWindow.getAllWindows()[0].webContents.debugger
+      await debuggerApi.sendCommand(
+        'Runtime.evaluate',
+        { expression: 'clearInterval(globalThis.__cpuAcceptanceTimer); delete globalThis.__cpuAcceptanceTimer' },
+        sessionId,
+      )
+      await debuggerApi.sendCommand('Target.detachFromTarget', { sessionId })
+    }, target.sessionId)
+  }
+  await expect.poll(async () => Number(await busyCpu.textContent())).toBeLessThan(20)
   await close()
   const closed = await counts()
   // Observe more than one polling interval to detect a leaked update timer.

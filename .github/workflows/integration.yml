@@ -38,6 +38,9 @@ jobs:
       - name: Install application dependencies
         working-directory: .tmp/lvce-integration
         run: npm ci
+      - name: Install worker CPU measurement backend
+        working-directory: .tmp/lvce-integration
+        run: npm install --workspace=packages/main-process @lvce-editor/main-process@6.55.0 --ignore-scripts
       - name: Install Chromium
         working-directory: .tmp/lvce-integration/packages/extension-host-worker-tests
         run: npx playwright install --with-deps chromium
