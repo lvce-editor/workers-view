@@ -58,7 +58,11 @@ test('wraps the table and empty state while keeping errors at the view level', (
     'WorkersViewTableHeaderRow',
     'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowBlurred',
   ])
-  expect(getDirectChildren(nodes, 'WorkersViewWorkerRow').map((node) => node.className)).toEqual(['WorkersViewWorkerCell', 'WorkersViewWorkerCell'])
+  expect(getDirectChildren(nodes, 'WorkersViewWorkerRow').map((node) => node.className)).toEqual([
+    'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell',
+  ])
 
   const emptyNodes = getWorkersVirtualDom([], true, PlatformType.Web)
   expect(getDirectChildren(emptyNodes, 'WorkersViewTableContainer').map((node) => node.className)).toEqual([
@@ -79,7 +83,10 @@ test('uses PascalCase class names for every Workers view element', () => {
     'WorkersViewTableHeaderButton',
     'WorkersViewTableHeaderCell',
     'WorkersViewTableHeaderButton',
+    'WorkersViewTableHeaderCell',
+    'WorkersViewTableHeaderButton',
     'WorkersViewWorkerRow',
+    'WorkersViewWorkerCell',
     'WorkersViewWorkerCell',
     'WorkersViewWorkerCell',
   ])
@@ -106,6 +113,7 @@ test('renders accessible red growth and green shrinkage rates beside heap usage'
   expect(getDirectChildren(growing, 'WorkersViewWorkerRow').map(({ className }) => className)).toEqual([
     'WorkersViewWorkerCell',
     'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell',
   ])
 
   const shrinking = getWorkersVirtualDom([{ ...worker, memoryTrend: { bytesPerSecond: 1024, direction: 'shrinking' } }], true, PlatformType.Electron)
@@ -118,13 +126,13 @@ test('renders accessible red growth and green shrinkage rates beside heap usage'
 test('renders sortable headers and exposes the selected sort direction', () => {
   const nodes = getWorkersVirtualDom([worker], true, PlatformType.Electron, undefined, 'memory', 'descending')
   const headers = nodes.filter((node) => node.className === 'WorkersViewTableHeaderCell')
-  expect(headers.map((header) => header['aria-sort'])).toEqual(['none', 'descending'])
+  expect(headers.map((header) => header['aria-sort'])).toEqual(['none', 'descending', 'none'])
   const table = nodes.find((node) => node.className === 'WorkersViewTable')
   const buttons = nodes.filter((node) => node.className === 'WorkersViewTableHeaderButton')
   expect(table?.onClick).toBe(9)
-  expect(buttons.map((button) => button.onClick)).toEqual([undefined, undefined])
-  expect(buttons.map((button) => button.onKeyDown)).toEqual([11, 11])
-  expect(buttons.map((button) => button['data-sortColumn'])).toEqual(['name', 'memory'])
+  expect(buttons.map((button) => button.onClick)).toEqual([undefined, undefined, undefined])
+  expect(buttons.map((button) => button.onKeyDown)).toEqual([11, 11, 11])
+  expect(buttons.map((button) => button['data-sortColumn'])).toEqual(['name', 'memory', 'cpu'])
   expect(nodes.filter((node) => node.className?.startsWith('WorkersViewWorkerRow')).map((row) => row.onClick)).toEqual([12])
 })
 
@@ -170,4 +178,20 @@ test('uses the existing English strings by default', () => {
   expect(nodes.some((node) => node.textContent === 'Unavailable')).toBe(true)
   expect(nodes.find((node) => node.className === 'WorkersViewTable')?.ariaLabel).toBe('Workers')
   expect(getWorkersVirtualDom([], true, PlatformType.Web).some((node) => node.textContent === 'No workers are running.')).toBe(true)
+})
+
+test('shows a sortable CPU percentage column in Electron, including unavailable and zero values', () => {
+  const nodes = getWorkersVirtualDom([{ ...worker, cpu: 70.123 }], true, PlatformType.Electron, undefined, 'cpu', 'descending')
+  expect(nodes.some((node) => node.textContent === 'CPU (%)')).toBe(true)
+  expect(nodes.some((node) => node.textContent === '70.1')).toBe(true)
+  expect(nodes.filter((node) => node.className === 'WorkersViewTableHeaderCell').map((node) => node['aria-sort'])).toEqual([
+    'none',
+    'none',
+    'descending',
+  ])
+  const zero = getWorkersVirtualDom([{ ...worker, cpu: 0 }], true, PlatformType.Electron)
+  expect(zero.some((node) => node.textContent === '0.0')).toBe(true)
+  const unavailable = getWorkersVirtualDom([{ ...worker, cpu: null }], true, PlatformType.Electron)
+  expect(unavailable.some((node) => node.textContent === 'Unavailable')).toBe(true)
+  expect(getWorkersVirtualDom([worker], true, PlatformType.Web).some((node) => node.textContent === 'CPU (%)')).toBe(false)
 })

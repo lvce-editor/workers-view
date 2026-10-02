@@ -35,6 +35,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
 
   const workers = Array.from({ length: 40 }, (_, index) => ({
+    cpu: [72.5, 0][index] ?? null,
     id: String(index),
     memory: index,
     ...(index === 0 && { memoryTrend: { bytesPerSecond: 2100, direction: 'growing' as const } }),
@@ -62,6 +63,22 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   const firstWorkerTrend = workerRows.first().locator('.WorkersViewMemoryTrendGrowing')
   await expect(workerRows).toHaveCount(40)
   await expect(firstWorkerTrend).toHaveText('↑ 2.1 kB/s')
+  const cpuHeader = WorkersView.table().locator('.WorkersViewTableHeaderCell').nth(2)
+  const cpuButton = cpuHeader.locator('.WorkersViewTableHeaderButton')
+  await expect(cpuButton).toHaveText('CPU (%)')
+  const busyCpuCell = workerRows.first().locator('.WorkersViewWorkerCell').nth(2)
+  const idleCpuCell = workerRows.nth(1).locator('.WorkersViewWorkerCell').nth(2)
+  const unavailableCpuCell = workerRows.nth(2).locator('.WorkersViewWorkerCell').nth(2)
+  await expect(busyCpuCell).toHaveText('72.5')
+  await expect(idleCpuCell).toHaveText('0.0')
+  await expect(unavailableCpuCell).toHaveText('Unavailable')
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify actual CPU header hit testing and sort state.
+  await cpuButton.click()
+  await expect(cpuHeader).toHaveAttribute('aria-sort', 'descending')
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '[data-sortColumn="cpu"]')
+  await KeyBoard.press('Enter')
+  await expect(cpuHeader).toHaveAttribute('aria-sort', 'ascending')
+
   await Command.execute('Workers.setComponentState', workersState)
   await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()

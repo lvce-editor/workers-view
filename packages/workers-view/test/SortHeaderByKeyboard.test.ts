@@ -25,6 +25,7 @@ const state = {
 } satisfies WorkersState
 
 test('sorts an activated header from Enter and Space', () => {
+  expect(sortHeaderByKeyboard(state, 'Enter', 'cpu')).toMatchObject({ sortColumn: 'cpu', sortDirection: 'descending' })
   expect(sortHeaderByKeyboard(state, 'Enter', 'name')).toMatchObject({ sortColumn: 'name', sortDirection: 'ascending' })
   expect(sortHeaderByKeyboard(state, ' ', 'memory')).toMatchObject({ sortColumn: 'memory', sortDirection: 'descending' })
 })

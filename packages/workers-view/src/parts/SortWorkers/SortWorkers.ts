@@ -10,11 +10,13 @@ export const sortWorkers = (
   if (!sortColumn || !sortDirection) return workers
   const direction = sortDirection === 'ascending' ? 1 : -1
   return workers.toSorted((a, b) => {
-    if (sortColumn === 'memory') {
-      if (a.memory === null) return b.memory === null ? compareName(a, b) : 1
-      if (b.memory === null) return -1
-      const memoryDifference = (a.memory - b.memory) * direction
-      if (memoryDifference) return memoryDifference
+    if (sortColumn === 'memory' || sortColumn === 'cpu') {
+      const aValue = a[sortColumn] ?? null
+      const bValue = b[sortColumn] ?? null
+      if (aValue === null) return bValue === null ? compareName(a, b) : 1
+      if (bValue === null) return -1
+      const difference = (aValue - bValue) * direction
+      if (difference) return difference
     } else {
       const nameDifference = compareName(a, b) * direction
       if (nameDifference) return nameDifference

@@ -63,7 +63,7 @@ test('loads workers, commits the rendered state, and disposes the refresh timer 
   await commandMap['Workers.loadContent'](uid)
   const { newState } = WorkersStates.get(uid)
   expect(newState.loaded).toBe(true)
-  expect(newState.workers).toEqual([{ ...worker, memory: null }])
+  expect(newState.workers).toEqual([{ ...worker, cpu: null, memory: null }])
   expect(jest.getTimerCount()).toBe(1)
   commandMap['Workers.render2'](uid, commandMap['Workers.diff2'](uid))
   expect(WorkersStates.get(uid).oldState).toBe(WorkersStates.get(uid).newState)

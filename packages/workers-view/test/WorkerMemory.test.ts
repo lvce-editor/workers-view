@@ -14,8 +14,9 @@ const fixture = () => {
     ids.map((id) => ({ runtimeName: `Worker ${id}`, sessionId: `session-${id}`, targetId: id })),
   )
   const getHeapUsages = jest.fn<(ids: readonly string[]) => Promise<readonly ({ usedSize: number } | null)[]>>(async (ids) =>
-    ids.map(() => ({ usedSize: 1024 })),
+    ids.map(() => ({ cpu: null, usedSize: 1024 })),
   )
+  const getCpuUsages = jest.fn<(ids: readonly string[]) => Promise<readonly (number | null)[]>>(async (ids) => ids.map(() => null))
   const detach = jest.fn(async (_ids: readonly string[]) => {})
   const send = jest.fn(async (port: MessagePort, _command: string, _windowId: number) => {
     ports.push(port)
@@ -23,6 +24,7 @@ const fixture = () => {
       commandMap: {
         'WorkerMemory.attach': attach,
         'WorkerMemory.detach': detach,
+        'WorkerMemory.getCpuUsages': getCpuUsages,
         'WorkerMemory.getHeapUsages': getHeapUsages,
         'WorkerMemory.getTargets': getTargets,
       },
@@ -33,7 +35,7 @@ const fixture = () => {
     'GetWindowId.getWindowId': () => 42,
     'SendMessagePortToMainProcess.sendMessagePortToMainProcess': send,
   })
-  return { attach, detach, getHeapUsages, getTargets, send }
+  return { attach, detach, getCpuUsages, getHeapUsages, getTargets, send }
 }
 
 afterEach(() => {
@@ -46,8 +48,8 @@ test('caches names and sessions while batching each refresh over one dedicated p
   const { attach, getHeapUsages, send } = fixture()
   for (let i = 0; i < 3; i++) {
     expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
-      'Worker a': { usedSize: 1024 },
-      'Worker b': { usedSize: 1024 },
+      'Worker a': { cpu: null, usedSize: 1024 },
+      'Worker b': { cpu: null, usedSize: 1024 },
     })
   }
   expect(send).toHaveBeenCalledTimes(1)
@@ -62,8 +64,8 @@ test('discovers added workers and releases removed workers without reevaluating 
   await WorkerMemory.getMemoryUsages(7)
   getTargets.mockResolvedValue(['b', 'c'])
   expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
-    'Worker b': { usedSize: 1024 },
-    'Worker c': { usedSize: 1024 },
+    'Worker b': { cpu: null, usedSize: 1024 },
+    'Worker c': { cpu: null, usedSize: 1024 },
   })
   expect(attach.mock.calls).toEqual([[['a', 'b']], [['c']]])
   expect(detach).toHaveBeenCalledWith(['session-a'])
@@ -90,7 +92,7 @@ test('coalesces overlapping requests and closes the port on disposal', async () 
 test('retries a failed session without disturbing successful measurements', async () => {
   const { attach, detach, getHeapUsages } = fixture()
   getHeapUsages.mockResolvedValueOnce([null, { usedSize: 0 }])
-  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({ 'Worker b': { usedSize: 0 } })
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({ 'Worker b': { cpu: null, usedSize: 0 } })
   expect(detach).toHaveBeenCalledWith(['session-a'])
   await WorkerMemory.getMemoryUsages(7)
   expect(attach.mock.calls).toEqual([[['a', 'b']], [['a']]])
@@ -110,7 +112,7 @@ test('loads Electron memory before polling and disposes the timer and connection
   RendererProcess.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => [worker] } }))
   commandMap['Workers.create'](7, '', 0, 0, 200, 100, PlatformType.Electron, '')
   await commandMap['Workers.loadContent'](7)
-  expect(WorkersStates.get(7).newState.workers).toEqual([{ ...worker, memory: 1024 }])
+  expect(WorkersStates.get(7).newState.workers).toEqual([{ ...worker, cpu: null, memory: 1024 }])
   expect(send).toHaveBeenCalledTimes(1)
 })
 
@@ -159,8 +161,8 @@ test('safely handles prototype property names as targets and worker names', asyn
 
   expect(Object.getPrototypeOf(usages)).toBeNull()
   expect(Object.hasOwn(usages, '__proto__')).toBe(true)
-  expect(usages.__proto__).toEqual({ usedSize: 1024 })
-  expect(usages.constructor).toEqual({ usedSize: 1024 })
+  expect(usages.__proto__).toEqual({ cpu: null, usedSize: 1024 })
+  expect(usages.constructor).toEqual({ cpu: null, usedSize: 1024 })
 })
 
 test('keeps heap results aligned with sessions when target names are integer-like', async () => {
@@ -175,8 +177,8 @@ test('keeps heap results aligned with sessions when target names are integer-lik
   const usages = await WorkerMemory.getMemoryUsages(7)
 
   expect(getHeapUsages).toHaveBeenCalledWith(['session-10', 'session-2'])
-  expect(usages['10']).toEqual({ usedSize: 10 })
-  expect(usages['2']).toEqual({ usedSize: 2 })
+  expect(usages['10']).toEqual({ cpu: null, usedSize: 10 })
+  expect(usages['2']).toEqual({ cpu: null, usedSize: 2 })
 })
 
 test('reconnects after the main process closes the port', async () => {
@@ -186,4 +188,18 @@ test('reconnects after the main process closes the port', async () => {
   await new Promise((resolve) => setTimeout(resolve, 20))
   await WorkerMemory.getMemoryUsages(7)
   expect(send).toHaveBeenCalledTimes(2)
+})
+
+test('attributes CPU samples by session order and preserves heaps when an older host rejects CPU requests', async () => {
+  const { getCpuUsages } = fixture()
+  getCpuUsages.mockResolvedValueOnce([72.5, 0])
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
+    'Worker a': { cpu: 72.5, usedSize: 1024 },
+    'Worker b': { cpu: 0, usedSize: 1024 },
+  })
+  getCpuUsages.mockRejectedValueOnce(new Error('Unknown worker memory command'))
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
+    'Worker a': { cpu: null, usedSize: 1024 },
+    'Worker b': { cpu: null, usedSize: 1024 },
+  })
 })

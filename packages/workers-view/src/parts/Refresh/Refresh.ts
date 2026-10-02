@@ -5,21 +5,24 @@ import * as SortWorkers from '../SortWorkers/SortWorkers.ts'
 import * as ToError from '../ToError/ToError.ts'
 
 export interface RefreshServices {
-  readonly getMemoryUsages: () => Promise<Readonly<Record<string, { readonly usedSize: number }>>>
+  readonly getMemoryUsages: () => Promise<Readonly<Record<string, { readonly usedSize: number; readonly cpu?: number | null }>>>
   readonly getShowMemoryUsageTrend: () => Promise<boolean>
   readonly getWorkers: () => Promise<readonly TrackedWorker[]>
   readonly now: () => number
 }
 
 export const refresh = async (state: WorkersState, services: RefreshServices): Promise<WorkersState> => {
-  const { memorySamples: previousSamples = [], platform, sortColumn, sortDirection } = state
+  const { memorySamples: previousSamples = [], platform, sortColumn, sortDirection, workers: previousWorkers } = state
   let workers: readonly TrackedWorker[]
   try {
     workers = await services.getWorkers()
   } catch (error) {
-    return { ...state, error: ToError.toError(error), loaded: true }
+    return { ...state, error: ToError.toError(error), loaded: true, workers: previousWorkers.map((worker) => ({ ...worker, cpu: null })) }
   }
-  let usages: Readonly<Record<string, { readonly usedSize: number }>> = Object.create(null) as Record<string, { readonly usedSize: number }>
+  let usages: Readonly<Record<string, { readonly usedSize: number; readonly cpu?: number | null }>> = Object.create(null) as Record<
+    string,
+    { readonly usedSize: number; readonly cpu?: number | null }
+  >
   let showTrend = false
   if (platform === PlatformType.Electron) {
     try {
@@ -46,13 +49,15 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
   }
   const displayedWorkers = workers.map((worker) => {
     const usage = Object.hasOwn(usages, worker.runtimeName) ? usages[worker.runtimeName] : undefined
+    const rawCpu = usage?.cpu
+    const cpu = typeof rawCpu === 'number' && Number.isFinite(rawCpu) && rawCpu >= 0 && rawCpu <= 100 ? rawCpu : null
     const memory = usage && Number.isFinite(usage.usedSize) ? usage.usedSize : null
     if (memory === null) {
       samplesByWorker.delete(worker.id)
-      return { ...worker, memory }
+      return { ...worker, cpu, memory }
     }
     if (!showTrend) {
-      return { ...worker, memory }
+      return { ...worker, cpu, memory }
     }
     const samples = samplesByWorker.get(worker.id) || []
     const latestSample = samples.at(-1)
@@ -64,7 +69,7 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
     if (samples.length > 61) samples.shift()
     samplesByWorker.set(worker.id, samples)
     const memoryTrend = GetMemoryTrend.getMemoryTrend(samples)
-    return { ...worker, memory, ...(memoryTrend && { memoryTrend }) }
+    return { ...worker, cpu, memory, ...(memoryTrend && { memoryTrend }) }
   })
   const memorySamples: MemorySample[] = []
   for (const samples of samplesByWorker.values()) {

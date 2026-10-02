@@ -3,6 +3,7 @@ import type { WorkersState } from '../WorkersState/WorkersState.ts'
 import * as SelectWorker from '../SelectWorker/SelectWorker.ts'
 import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
 import * as SortByName from '../SortByName/SortByName.ts'
+import * as ToggleSort from '../SortWorkers/ToggleSort.ts'
 
 const ErrorHeight = 30
 const HeaderHeight = 23
@@ -15,7 +16,7 @@ export const handleTableClick = (state: WorkersState, clientX: number, clientY: 
     return state
   }
   const relativeY = clientY - y
-  const columnCount = platform === PlatformType.Electron ? 2 : 1
+  const columnCount = platform === PlatformType.Electron ? 3 : 1
   const tableTop = error ? ErrorHeight : 0
   const headerTop = tableTop
   if (relativeY >= headerTop && relativeY < headerTop + HeaderHeight) {
@@ -23,6 +24,7 @@ export const handleTableClick = (state: WorkersState, clientX: number, clientY: 
     if (columnIndex === 0) {
       return SortByName.sortByName(state)
     }
+    if (columnIndex === 2) return ToggleSort.toggleSort(state, 'cpu')
     return SortByMemory.sortByMemory(state)
   }
   const rowIndex = Math.floor((relativeY + scrollTop - tableTop - HeaderHeight) / RowHeight)

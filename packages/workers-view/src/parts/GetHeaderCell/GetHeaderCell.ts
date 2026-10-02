@@ -3,9 +3,9 @@ import * as AriaRoles from '../AriaRoles/AriaRoles.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 
 export const getHeaderCell = (
-  column: 'memory' | 'name',
+  column: 'cpu' | 'memory' | 'name',
   textContent: string,
-  sortColumn: 'memory' | 'name' | undefined,
+  sortColumn: 'cpu' | 'memory' | 'name' | undefined,
   sortDirection: 'ascending' | 'descending' | undefined,
 ): VirtualDomNode[] => [
   {

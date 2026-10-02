@@ -5,6 +5,7 @@ export interface TrackedWorker {
 }
 
 export interface DisplayedWorker extends TrackedWorker {
+  readonly cpu?: number | null
   readonly memory: number | null
   readonly memoryTrend?: {
     readonly direction: 'growing' | 'shrinking'
@@ -18,7 +19,7 @@ export interface MemorySample {
   readonly timestamp: number
 }
 
-export type SortColumn = 'memory' | 'name'
+export type SortColumn = 'cpu' | 'memory' | 'name'
 export type SortDirection = 'ascending' | 'descending'
 
 export interface WorkersState {
