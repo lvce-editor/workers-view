@@ -40,7 +40,7 @@ afterEach(() => {
 
 test('returns names without requesting measurements on web', async () => {
   const result = await refresh(state, services)
-  expect(result.workers).toEqual([{ ...worker, memory: null }])
+  expect(result.workers).toEqual([{ ...worker, cpu: null, memory: null }])
   expect(getMemoryUsages).not.toHaveBeenCalled()
 })
 
@@ -165,4 +165,13 @@ test('clears an old error after a successful refresh', async () => {
 
   expect(result.error).toBeUndefined()
   expect(result.workers).toHaveLength(1)
+})
+
+test('updates CPU usage independently and clears stale values after a failed measurement', async () => {
+  getMemoryUsages.mockResolvedValueOnce({ [worker.runtimeName]: { cpu: 68.5, usedSize: 4096 } })
+  const first = await refresh({ ...state, platform: PlatformType.Electron }, services)
+  expect(first.workers[0].cpu).toBe(68.5)
+  getMemoryUsages.mockRejectedValueOnce(new Error('Debugger disconnected'))
+  const second = await refresh(first, services)
+  expect(second.workers[0].cpu).toBeNull()
 })

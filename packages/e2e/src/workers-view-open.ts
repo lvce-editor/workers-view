@@ -35,12 +35,14 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
 
   const workers = Array.from({ length: 40 }, (_, index) => ({
+    cpu: [72.5, 0][index] ?? null,
     id: String(index),
     memory: index,
     ...(index === 0 && { memoryTrend: { bytesPerSecond: 2100, direction: 'growing' as const } }),
     name: `Worker ${index}`,
     runtimeName: `Worker ${index}`,
   }))
+  const geometry = (await Command.execute('ComponentState.getState', workersComponent.uid)) as { readonly x: number; readonly y: number }
   const workersState = {
     error: undefined,
     hasFocus: false,
@@ -53,15 +55,31 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
     uid: workersComponent.uid,
     width: 800,
     workers,
-    x: 0,
-    y: 0,
+    x: geometry.x,
+    y: geometry.y,
   }
   await Command.execute('Workers.setComponentState', workersState)
-  await WorkersView.resize(800, 120)
   const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
   const firstWorkerTrend = workerRows.first().locator('.WorkersViewMemoryTrendGrowing')
   await expect(workerRows).toHaveCount(40)
   await expect(firstWorkerTrend).toHaveText('↑ 2.1 kB/s')
+  const cpuHeader = WorkersView.table().locator('.WorkersViewTableHeaderCell:nth-child(3)')
+  const cpuButton = cpuHeader.locator('.WorkersViewTableHeaderButton')
+  await expect(cpuButton).toHaveText('CPU (%)')
+  const busyCpuCell = WorkersView.table().locator('[data-worker-id="0"] .WorkersViewWorkerCell:nth-child(3)')
+  const idleCpuCell = WorkersView.table().locator('[data-worker-id="1"] .WorkersViewWorkerCell:nth-child(3)')
+  const unavailableCpuCell = WorkersView.table().locator('[data-worker-id="2"] .WorkersViewWorkerCell:nth-child(3)')
+  await expect(busyCpuCell).toHaveText('72.5')
+  await expect(idleCpuCell).toHaveText('0.0')
+  await expect(unavailableCpuCell).toHaveText('Unavailable')
+  // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify actual CPU header hit testing and sort state.
+  await cpuButton.click()
+  await expect(cpuHeader).toHaveAttribute('aria-sort', 'descending')
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '[data-sort-column="cpu"]')
+  await KeyBoard.press('Enter')
+  await expect(cpuHeader).toHaveAttribute('aria-sort', 'ascending')
+  await WorkersView.resize(800, 120)
+
   await Command.execute('Workers.setComponentState', workersState)
   await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()

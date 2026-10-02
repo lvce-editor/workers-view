@@ -32,6 +32,7 @@ const click = (target: WorkersState, clientX: number, clientY: number): WorkersS
 
 test('uses the layout origin and platform column count for pointer sorting', () => {
   expect(click(state, 150, 210)).toMatchObject({ sortColumn: 'name', sortDirection: 'ascending' })
+  expect(click(state, 450, 210)).toMatchObject({ sortColumn: 'cpu', sortDirection: 'descending' })
   expect(click(state, 350, 210)).toMatchObject({ sortColumn: 'memory', sortDirection: 'descending' })
   expect(click({ ...state, platform: PlatformType.Web }, 450, 210)).toMatchObject({ sortColumn: 'name' })
   expect(click(state, 99, 210)).toBe(state)

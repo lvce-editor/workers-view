@@ -1,7 +1,7 @@
 import type { SortColumn, SortDirection, WorkersState } from '../WorkersState/WorkersState.ts'
 import * as SortWorkers from './SortWorkers.ts'
 
-const getInitialDirection = (sortColumn: SortColumn): SortDirection => (sortColumn === 'memory' ? 'descending' : 'ascending')
+const getInitialDirection = (sortColumn: SortColumn): SortDirection => (sortColumn === 'name' ? 'ascending' : 'descending')
 
 export const toggleSort = (state: WorkersState, sortColumn: SortColumn): WorkersState => {
   const { sortColumn: previousSortColumn, sortDirection: previousSortDirection, workers } = state

@@ -75,3 +75,9 @@ test('selects the default direction for each column then toggles it', () => {
   expect(byName.sortDirection).toBe('ascending')
   expect(ToggleSort.toggleSort(byName, 'name').sortDirection).toBe('descending')
 })
+
+test('sorts CPU numerically and keeps unavailable values last in either direction', () => {
+  const values = workers.map((worker, index) => ({ ...worker, cpu: [70, 0, null, 9][index] }))
+  expect(SortWorkers.sortWorkers(values, 'cpu', 'descending').map((worker) => worker.id)).toEqual(['large', 'medium', 'small', 'missing'])
+  expect(SortWorkers.sortWorkers(values, 'cpu', 'ascending').map((worker) => worker.id)).toEqual(['small', 'medium', 'large', 'missing'])
+})

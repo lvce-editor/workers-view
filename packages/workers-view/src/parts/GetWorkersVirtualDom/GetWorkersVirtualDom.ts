@@ -17,7 +17,7 @@ export const getWorkersVirtualDom = (
   loaded: boolean,
   platform: number,
   error: Error | undefined = undefined,
-  sortColumn: 'memory' | 'name' | undefined = undefined,
+  sortColumn: 'cpu' | 'memory' | 'name' | undefined = undefined,
   sortDirection: 'ascending' | 'descending' | undefined = undefined,
   selectedWorkerId: string | undefined = undefined,
   hasFocus = false,
@@ -26,6 +26,7 @@ export const getWorkersVirtualDom = (
   const headerCells = [
     GetHeaderCell.getHeaderCell('name', WorkersViewStrings.name(), sortColumn, sortDirection),
     GetHeaderCell.getHeaderCell('memory', WorkersViewStrings.heapUse(), sortColumn, sortDirection),
+    GetHeaderCell.getHeaderCell('cpu', WorkersViewStrings.cpuUsage(), sortColumn, sortDirection),
   ]
   const headerRow = { childCount: headerCells.length, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
   const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
@@ -50,6 +51,6 @@ export const getWorkersVirtualDom = (
     onScroll: DomEventListenerFunctions.ScrollWorkers,
     type: VirtualDomElements.Div,
   }
-  const children = [...errorDom, tableContainer, table, { ...headerRow, childCount: showMemory ? 2 : 1 }, ...columns, ...rows, ...emptyDom]
+  const children = [...errorDom, tableContainer, table, { ...headerRow, childCount: showMemory ? 3 : 1 }, ...columns, ...rows, ...emptyDom]
   return [{ childCount: 1 + errorDom.length, className: 'WorkersView', type: VirtualDomElements.Div }, ...children]
 }

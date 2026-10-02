@@ -13,3 +13,5 @@ npm run e2e:headless --
 ```
 
 Preparation replaces the disposable application's scenarios and fixtures and overlays local build artifacts. See `config.json` for artifact and script destinations, and `.github/workflows/integration.yml` for static export, Electron, and settings requirements. Update the pinned application commit when its runtime needs updating.
+
+The Workers memory/CPU Electron scenario requires `@lvce-editor/main-process` 6.55.0. The workflow installs this backend in its disposable checkout before applying the candidate Workers view build. It checks independent busy/idle CPU cells, return to idle, cached memory sessions, view disposal/reopening, and heap snapshots. Set `LVCE_CPU_SCREENSHOT` to capture the real CPU table during a local run.

@@ -9,6 +9,7 @@ interface Session {
   readonly targetId: string
 }
 interface Usage {
+  readonly cpu?: number | null
   readonly usedSize: number
 }
 interface Connection {
@@ -112,12 +113,23 @@ const query = async (connection: Connection): Promise<Readonly<Record<string, Us
     'WorkerMemory.getHeapUsages',
     sessions.map((session) => session.sessionId),
   )
+  let cpuUsages: readonly (number | null)[] = []
+  try {
+    cpuUsages = await invoke(
+      'WorkerMemory.getCpuUsages',
+      sessions.map((session) => session.sessionId),
+    )
+  } catch {
+    // Older hosts and unavailable CPU counters must not hide heap usage.
+  }
+  connection.controller.signal.throwIfAborted()
   const result = createDictionary<Usage>()
   const failed: string[] = []
   for (const [index, session] of sessions.entries()) {
     const usage = usages[index]
     if (usage && Number.isFinite(usage.usedSize)) {
-      result[session.runtimeName] = usage
+      const cpu = cpuUsages[index]
+      result[session.runtimeName] = { ...usage, cpu: typeof cpu === 'number' && Number.isFinite(cpu) && cpu >= 0 && cpu <= 100 ? cpu : null }
     } else {
       delete connection.sessions[session.targetId]
       connection.sessionOrder.splice(connection.sessionOrder.indexOf(session.targetId), 1)
