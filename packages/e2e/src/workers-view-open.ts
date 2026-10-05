@@ -80,6 +80,16 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await expect(cpuHeader).toHaveAttribute('aria-sort', 'ascending')
   await WorkersView.resize(800, 120)
 
+  const memoryHeader = WorkersView.table().locator('.WorkersViewTableHeaderCell:nth-child(2)')
+  const secondWorkerRow = workerRows.nth(1)
+  const finalWorkerRow = workerRows.nth(39)
+  await Command.execute('Viewlet.focusSelector', workersComponent.uid, '[data-sort-column="memory"]')
+  await KeyBoard.press('Enter')
+  await expect(memoryHeader).toHaveAttribute('aria-sort', 'descending')
+  await expect(workerRows.first()).toHaveAttribute('data-worker-id', '39')
+  await expect(secondWorkerRow).toHaveAttribute('data-worker-id', '38')
+  await expect(finalWorkerRow).toHaveAttribute('data-worker-id', '0')
+
   await Command.execute('Workers.setComponentState', workersState)
   await expect(heading).toHaveCount(0)
   await expect(WorkersView.table()).toBeVisible()
