@@ -40,7 +40,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
     collapsedWorkerIds: [],
     error: new Error('Freeze Workers tree-grid e2e state'),
     loaded: true,
-    selectedWorkerId: 'renderer',
+    selectedWorkerId: 'workers-tree-grid-renderer',
     uid: component.uid,
     workers,
   })
