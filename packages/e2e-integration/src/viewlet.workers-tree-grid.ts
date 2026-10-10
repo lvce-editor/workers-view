@@ -45,7 +45,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
     workers,
   })
 
-  const row = (id: string): ReturnType<typeof table.locator> => table.locator(`[data-worker-id="${id}"]`)
+  const row = (id: string): ReturnType<typeof table.locator> => table.locator(`.WorkersViewWorkerRow[data-worker-id="${id}"]`)
   await expect(row('workers-tree-grid-renderer')).toHaveAttribute('aria-level', '1')
   await expect(row('workers-tree-grid-panel')).toHaveAttribute('aria-level', '2')
   await expect(row('workers-tree-grid-eslint')).toHaveAttribute('aria-level', '3')
