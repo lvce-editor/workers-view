@@ -25,7 +25,6 @@ const state = {
 } satisfies WorkersState
 
 test('sorts an activated header from Enter and Space', () => {
-  expect(sortHeaderByKeyboard(state, 'Enter', 'cpu')).toMatchObject({ sortColumn: 'cpu', sortDirection: 'descending' })
   expect(sortHeaderByKeyboard(state, 'Enter', 'name')).toMatchObject({ sortColumn: 'name', sortDirection: 'ascending' })
   expect(sortHeaderByKeyboard(state, ' ', 'memory')).toMatchObject({ sortColumn: 'memory', sortDirection: 'descending' })
 })
@@ -33,6 +32,7 @@ test('sorts an activated header from Enter and Space', () => {
 test('ignores unsupported keys and columns', () => {
   expect(sortHeaderByKeyboard(state, 'ArrowDown', 'name')).toBe(state)
   expect(sortHeaderByKeyboard(state, 'Enter', 'worker')).toBe(state)
+  expect(sortHeaderByKeyboard(state, 'Enter', 'cpu')).toBe(state)
   const webState = { ...state, platform: PlatformType.Web }
   expect(sortHeaderByKeyboard(webState, 'Enter', 'memory')).toBe(webState)
 })

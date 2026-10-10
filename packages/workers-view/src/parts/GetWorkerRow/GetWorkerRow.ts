@@ -63,22 +63,13 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
     },
   ]
   if (showMemory) {
-    cells.push(...getMemoryCell(worker), {
-      className: 'WorkersViewWorkerCell',
-      'data-contextMenuWorkerId': worker.id,
-      role: AriaRoles.Cell,
-      textContent:
-        typeof worker.cpu === 'number' && Number.isFinite(worker.cpu) && worker.cpu >= 0 && worker.cpu <= 100
-          ? worker.cpu.toFixed(1)
-          : WorkersViewStrings.unavailable(),
-      type: VirtualDomElements.Td,
-    })
+    cells.push(...getMemoryCell(worker))
   }
   return [
     {
       'aria-selected': selected,
       ariaLabel: worker.name,
-      childCount: showMemory ? 3 : 1,
+      childCount: showMemory ? 2 : 1,
       className,
       'data-contextMenuWorkerId': worker.id,
       'data-workerId': worker.id,
