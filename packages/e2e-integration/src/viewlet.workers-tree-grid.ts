@@ -20,10 +20,20 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   if (!component) throw new Error('Expected Workers component to exist')
   const state = (await Command.execute('Workers.getComponentState', component.uid)) as Record<string, unknown>
   const workers = [
-    { id: 'renderer', name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
-    { id: 'panel', name: 'Panel Worker', parentId: 'renderer', runtimeName: 'Panel Worker' },
-    { id: 'extension-management', name: 'Extension Management Worker', parentId: 'renderer', runtimeName: 'Extension Management Worker' },
-    { id: 'eslint', name: 'ESLint Worker', parentId: 'extension-management', runtimeName: 'ESLint Worker' },
+    { id: 'workers-tree-grid-renderer', name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+    { id: 'workers-tree-grid-panel', name: 'Panel Worker', parentId: 'workers-tree-grid-renderer', runtimeName: 'Panel Worker' },
+    {
+      id: 'workers-tree-grid-extension-management',
+      name: 'Extension Management Worker',
+      parentId: 'workers-tree-grid-renderer',
+      runtimeName: 'Extension Management Worker',
+    },
+    {
+      id: 'workers-tree-grid-eslint',
+      name: 'ESLint Worker',
+      parentId: 'workers-tree-grid-extension-management',
+      runtimeName: 'ESLint Worker',
+    },
   ]
   await Command.execute('Workers.setComponentState', {
     ...state,
@@ -36,24 +46,24 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   })
 
   const row = (id: string): ReturnType<typeof table.locator> => table.locator(`[data-worker-id="${id}"]`)
-  await expect(row('renderer')).toHaveAttribute('aria-level', '1')
-  await expect(row('panel')).toHaveAttribute('aria-level', '2')
-  await expect(row('eslint')).toHaveAttribute('aria-level', '3')
+  await expect(row('workers-tree-grid-renderer')).toHaveAttribute('aria-level', '1')
+  await expect(row('workers-tree-grid-panel')).toHaveAttribute('aria-level', '2')
+  await expect(row('workers-tree-grid-eslint')).toHaveAttribute('aria-level', '3')
 
   await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTable')
   await KeyBoard.press('ArrowDown')
   await KeyBoard.press('ArrowDown')
-  await expect(row('extension-management')).toHaveAttribute('aria-selected', 'true')
+  await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowRight')
-  await expect(row('eslint')).toHaveAttribute('aria-selected', 'true')
+  await expect(row('workers-tree-grid-eslint')).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowLeft')
-  await expect(row('extension-management')).toHaveAttribute('aria-selected', 'true')
+  await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-selected', 'true')
 
   await KeyBoard.press('ArrowLeft')
-  await expect(row('eslint')).toBeHidden()
-  await expect(row('extension-management')).toHaveAttribute('aria-expanded', 'false')
+  await expect(row('workers-tree-grid-eslint')).toBeHidden()
+  await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-expanded', 'false')
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- Exercise the real disclosure control.
-  await row('extension-management').locator('.WorkersViewDisclosure').click()
-  await expect(row('eslint')).toBeVisible()
-  await expect(row('extension-management')).toHaveAttribute('aria-expanded', 'true')
+  await row('workers-tree-grid-extension-management').locator('.WorkersViewDisclosure').click()
+  await expect(row('workers-tree-grid-eslint')).toBeVisible()
+  await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-expanded', 'true')
 }
