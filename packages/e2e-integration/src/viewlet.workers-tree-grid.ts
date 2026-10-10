@@ -54,7 +54,10 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
 
   await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTable')
   await expect(Locator(':focus')).toHaveAttribute('class', 'WorkersViewTable')
-  await expect(row('workers-tree-grid-renderer')).toHaveAttribute('aria-selected', 'true')
+  await expect(row('workers-tree-grid-renderer')).toHaveAttribute(
+    'class',
+    'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowFocused',
+  )
   await KeyBoard.press('ArrowDown')
   await expect(row('workers-tree-grid-panel')).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowDown')
