@@ -14,5 +14,6 @@ export const renderDom = (_oldState: WorkersState, newState: WorkersState): read
     newState.sortDirection,
     newState.selectedWorkerId,
     newState.hasFocus,
+    newState.collapsedWorkerIds,
   ),
 ]

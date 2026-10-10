@@ -44,6 +44,13 @@ test('returns names without requesting measurements on web', async () => {
   expect(getMemoryUsages).not.toHaveBeenCalled()
 })
 
+test('keeps current workers without CPU data when listing fails', async () => {
+  getWorkers.mockRejectedValue(new Error('worker list unavailable'))
+  const result = await refresh({ ...state, workers: [{ ...worker, cpu: 5, memory: 12 }] }, services)
+  expect(result.error?.message).toBe('worker list unavailable')
+  expect(result.workers).toEqual([{ ...worker, cpu: null, memory: 12 }])
+})
+
 test('attributes heap measurements to each registered worker in Electron', async () => {
   getWorkers.mockResolvedValue([worker, { ...worker, id: 'worker-2', runtimeName: 'Editor Worker [worker-2]' }])
   getMemoryUsages.mockResolvedValueOnce({ [worker.runtimeName]: { usedSize: 4096 } })
@@ -69,6 +76,16 @@ test('calculates worker memory trends across irregular refresh intervals', async
     { id: worker.id, memory: 1000, timestamp: 10_000 },
     { id: worker.id, memory: 1200, timestamp: 60_000 },
   ])
+})
+
+test('keeps the memory trend history bounded after reaching its sample limit', async () => {
+  getMemoryUsages.mockResolvedValue({ [worker.runtimeName]: { usedSize: 1200 } })
+  getShowMemoryUsageTrend.mockResolvedValue(true)
+  now.mockReturnValue(60_000)
+  const memorySamples = Array.from({ length: 61 }, (_, index) => ({ id: worker.id, memory: 1000 + index, timestamp: 59_000 }))
+  const result = await refresh({ ...state, memorySamples, platform: PlatformType.Electron }, services)
+  expect(result.memorySamples).toHaveLength(61)
+  expect(result.memorySamples?.[0]).toEqual(memorySamples[1])
 })
 
 test('drops trend samples when the setting is disabled, measurements are unavailable, or workers disappear', async () => {

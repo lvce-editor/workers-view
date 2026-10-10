@@ -58,7 +58,10 @@ test('wraps the table and empty state while keeping errors at the view level', (
     'WorkersViewTableHeaderRow',
     'WorkersViewWorkerRow WorkersViewWorkerRowSelected WorkersViewWorkerRowBlurred',
   ])
-  expect(getDirectChildren(nodes, 'WorkersViewWorkerRow').map((node) => node.className)).toEqual(['WorkersViewWorkerCell', 'WorkersViewWorkerCell'])
+  expect(getDirectChildren(nodes, 'WorkersViewWorkerRow').map((node) => node.className)).toEqual([
+    'WorkersViewWorkerCell WorkersViewNameCell WorkersViewIndent-1',
+    'WorkersViewWorkerCell',
+  ])
 
   const emptyNodes = getWorkersVirtualDom([], true, PlatformType.Web)
   expect(getDirectChildren(emptyNodes, 'WorkersViewTableContainer').map((node) => node.className)).toEqual([
@@ -80,7 +83,8 @@ test('uses PascalCase class names for every Workers view element', () => {
     'WorkersViewTableHeaderCell',
     'WorkersViewTableHeaderButton',
     'WorkersViewWorkerRow',
-    'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell WorkersViewNameCell WorkersViewIndent-1',
+    'WorkersViewWorkerName',
     'WorkersViewWorkerCell',
   ])
   expect(getWorkersVirtualDom([], true, PlatformType.Web).map((node) => node.className)).toContain('WorkersViewEmptyState')
@@ -104,7 +108,7 @@ test('renders accessible red growth and green shrinkage rates beside heap usage'
     textContent: '↑ 2.1 kB/s',
   })
   expect(getDirectChildren(growing, 'WorkersViewWorkerRow').map(({ className }) => className)).toEqual([
-    'WorkersViewWorkerCell',
+    'WorkersViewWorkerCell WorkersViewNameCell WorkersViewIndent-1',
     'WorkersViewWorkerCell',
   ])
 

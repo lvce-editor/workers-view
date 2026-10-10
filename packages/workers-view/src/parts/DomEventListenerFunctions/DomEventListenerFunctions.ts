@@ -5,3 +5,4 @@ export const TableClick = 9
 export const ScrollWorkers = 10
 export const SortHeaderByKeyboard = 11
 export const SelectWorker = 12
+export const ToggleWorker = 14

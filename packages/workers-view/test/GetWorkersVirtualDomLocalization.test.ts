@@ -17,3 +17,10 @@ test('uses WorkersViewStrings for worker labels, memory, empty state, and the co
   const emptyNodes = getWorkersVirtualDom([], true, PlatformType.Web)
   expect(emptyNodes.some((node) => node.textContent === WorkersViewStrings.noWorkersAreRunning())).toBe(true)
 })
+
+test('localizes the disclosure action for workers with children', () => {
+  const parent = { id: 'parent', memory: null, name: 'Parent Worker', runtimeName: 'Parent Worker' }
+  const child = { id: 'child', memory: null, name: 'Child Worker', parentId: parent.id, runtimeName: 'Child Worker' }
+  const nodes = getWorkersVirtualDom([parent, child], true, PlatformType.Web)
+  expect(nodes.find((node) => node.className === 'WorkersViewDisclosure')?.ariaLabel).toBe(WorkersViewStrings.collapseWorker())
+})

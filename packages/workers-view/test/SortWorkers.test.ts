@@ -67,6 +67,58 @@ test('keeps original order when no sort is selected and resolves equal values co
   ])
 })
 
+test('keeps Renderer Worker first when the tree contains multiple roots', () => {
+  const treeWorkers: readonly DisplayedWorker[] = [
+    { id: 'other-root', memory: 1, name: 'Auxiliary Worker', runtimeName: 'Auxiliary Worker' },
+    { id: 'child', memory: 2, name: 'Child Worker', parentId: 'other-root', runtimeName: 'Child Worker' },
+    { id: 'renderer', memory: 3, name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+  ]
+  expect(SortWorkers.sortWorkers(treeWorkers, 'name', 'ascending').map((worker) => worker.id)).toEqual(['renderer', 'other-root', 'child'])
+  expect(SortWorkers.sortWorkers([treeWorkers[0], treeWorkers[2]], undefined, undefined).map((worker) => worker.id)).toEqual([
+    'renderer',
+    'other-root',
+  ])
+  const reversedRoots: readonly DisplayedWorker[] = [
+    { id: 'renderer', memory: 3, name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+    { id: 'other-root', memory: 1, name: 'Auxiliary Worker', runtimeName: 'Auxiliary Worker' },
+    { id: 'another-root', memory: 2, name: 'Beta Worker', runtimeName: 'Beta Worker' },
+    { id: 'child', memory: 3, name: 'Child Worker', parentId: 'other-root', runtimeName: 'Child Worker' },
+  ]
+  expect(SortWorkers.sortWorkers(reversedRoots, 'name', 'ascending')[0]?.id).toBe('renderer')
+})
+
+test('keeps Renderer Worker first while sorting a flat worker list', () => {
+  const flatWorkers: readonly DisplayedWorker[] = [
+    { id: 'zulu', memory: 1, name: 'Zulu Worker', runtimeName: 'Zulu Worker' },
+    { id: 'renderer', memory: 2, name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+    { id: 'alpha', memory: 3, name: 'Alpha Worker', runtimeName: 'Alpha Worker' },
+  ]
+  expect(SortWorkers.sortWorkers(flatWorkers, 'name', 'ascending').map((worker) => worker.id)).toEqual(['renderer', 'alpha', 'zulu'])
+})
+
+test('preserves hierarchical order when sorting is not selected', () => {
+  expect(SortWorkers.sortWorkers(workers, undefined, undefined)).toBe(workers)
+  const nested: readonly DisplayedWorker[] = [
+    { id: 'renderer', memory: 0, name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+    ...workers.map((worker) => ({ ...worker, parentId: 'renderer' })),
+  ]
+  expect(SortWorkers.sortWorkers(nested, undefined, undefined).map((worker) => worker.id)).toEqual([
+    'renderer',
+    'large',
+    'small',
+    'missing',
+    'medium',
+  ])
+})
+
+test('keeps cyclic worker metadata in the sorted result', () => {
+  const cyclic: readonly DisplayedWorker[] = [
+    { id: 'cycle-a', memory: 1, name: 'Cycle A', parentId: 'cycle-b', runtimeName: 'Cycle A' },
+    { id: 'cycle-b', memory: 2, name: 'Cycle B', parentId: 'cycle-a', runtimeName: 'Cycle B' },
+  ]
+  expect(SortWorkers.sortWorkers(cyclic, 'name', 'ascending').map((worker) => worker.id)).toEqual(['cycle-a', 'cycle-b'])
+})
+
 test('selects the default direction for each column then toggles it', () => {
   const byMemory = ToggleSort.toggleSort(state, 'memory')
   expect(byMemory.sortDirection).toBe('descending')

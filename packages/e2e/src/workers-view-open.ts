@@ -8,9 +8,10 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   const view = WorkersView.root()
   const heading = WorkersView.heading()
   const nameHeader = WorkersView.nameHeader()
+  const table = view.locator('.WorkersViewTable')
   await expect(view).toBeVisible()
   await expect(heading).toHaveCount(0)
-  await expect(WorkersView.table()).toBeVisible()
+  await expect(table).toBeVisible()
   const components = (await Command.execute('ComponentState.getComponents')) as readonly { readonly moduleId: string; readonly uid: number }[]
   const workersComponent = components.find((component) => component.moduleId === 'Workers')
   if (!workersComponent) {
@@ -59,18 +60,18 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
     y: geometry.y,
   }
   await Command.execute('Workers.setComponentState', workersState)
-  const workerRows = WorkersView.table().locator('.WorkersViewWorkerRow')
+  const workerRows = table.locator('.WorkersViewWorkerRow')
   const firstWorkerTrend = workerRows.first().locator('.WorkersViewMemoryTrendGrowing')
   await expect(workerRows).toHaveCount(40)
   await expect(firstWorkerTrend).toHaveText('↑ 2.1 kB/s')
-  const visibleHeaders = WorkersView.table().locator('.WorkersViewTableHeaderCell')
+  const visibleHeaders = table.locator('.WorkersViewTableHeaderCell')
   const firstWorkerRow = workerRows.first()
   const firstWorkerCells = firstWorkerRow.locator('.WorkersViewWorkerCell')
   await expect(visibleHeaders).toHaveCount(2)
   await expect(firstWorkerCells).toHaveCount(2)
   await WorkersView.resize(800, 120)
 
-  const memoryHeader = WorkersView.table().locator('.WorkersViewTableHeaderCell:nth-child(2)')
+  const memoryHeader = table.locator('.WorkersViewTableHeaderCell:nth-child(2)')
   const secondWorkerRow = workerRows.nth(1)
   const finalWorkerRow = workerRows.nth(39)
   await Command.execute('Viewlet.focusSelector', workersComponent.uid, '[data-sort-column="memory"]')
@@ -82,20 +83,20 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
 
   await Command.execute('Workers.setComponentState', workersState)
   await expect(heading).toHaveCount(0)
-  await expect(WorkersView.table()).toBeVisible()
+  await expect(table).toBeVisible()
   const [firstChangedWorker, ...otherChangedWorkers] = workers
   const changedWorkers = firstChangedWorker ? [{ ...firstChangedWorker, name: 'Updated Worker' }, ...otherChangedWorkers] : []
   await Command.execute('Workers.setComponentState', { ...workersState, workers: changedWorkers })
   await expect(workerRows.first()).toContainText('Updated Worker')
   await expect(heading).toHaveCount(0)
-  await expect(WorkersView.table()).toBeVisible()
+  await expect(table).toBeVisible()
   await WorkersView.resize(800, 800)
 
   await Main.closeActiveEditor()
   await WorkersView.open()
   await expect(WorkersView.root()).toBeVisible()
   await expect(heading).toHaveCount(0)
-  await expect(WorkersView.table()).toBeVisible()
+  await expect(table).toBeVisible()
   await WorkersView.setError(new Error('Workers view e2e error'))
   const alert = WorkersView.error()
   await expect(alert).toHaveText('Workers view e2e error')
@@ -103,5 +104,5 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   await expect(alert).toHaveText('Workers view e2e error')
   await WorkersView.refresh()
   await expect(alert).toHaveCount(0)
-  await expect(WorkersView.table()).toBeVisible()
+  await expect(table).toBeVisible()
 }

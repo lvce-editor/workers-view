@@ -1,6 +1,7 @@
 export interface TrackedWorker {
   readonly id: string
   readonly name: string
+  readonly parentId?: string
   readonly runtimeName: string
 }
 
@@ -13,6 +14,12 @@ export interface DisplayedWorker extends TrackedWorker {
   }
 }
 
+export interface VisibleWorker extends DisplayedWorker {
+  readonly depth: number
+  readonly expanded: boolean
+  readonly hasChildren: boolean
+}
+
 export interface MemorySample {
   readonly id: string
   readonly memory: number
@@ -23,6 +30,7 @@ export type SortColumn = 'cpu' | 'memory' | 'name'
 export type SortDirection = 'ascending' | 'descending'
 
 export interface WorkersState {
+  readonly collapsedWorkerIds?: readonly string[]
   readonly domRendered: boolean
   readonly error: Error | undefined
   readonly hasFocus: boolean

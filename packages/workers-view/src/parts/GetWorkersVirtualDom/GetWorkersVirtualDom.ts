@@ -5,6 +5,7 @@ import * as AriaRoles from '../AriaRoles/AriaRoles.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import * as GetEmptyState from '../GetEmptyState/GetEmptyState.ts'
 import * as GetHeaderCell from '../GetHeaderCell/GetHeaderCell.ts'
+import * as GetVisibleWorkers from '../GetVisibleWorkers/GetVisibleWorkers.ts'
 import * as GetWorkerRow from '../GetWorkerRow/GetWorkerRow.ts'
 import * as TabIndex from '../TabIndex/TabIndex.ts'
 import * as WorkersViewStrings from '../WorkersViewStrings/WorkersViewStrings.ts'
@@ -21,6 +22,7 @@ export const getWorkersVirtualDom = (
   sortDirection: 'ascending' | 'descending' | undefined = undefined,
   selectedWorkerId: string | undefined = undefined,
   hasFocus = false,
+  collapsedWorkerIds: readonly string[] = [],
 ): readonly VirtualDomNode[] => {
   const showMemory = platform === PlatformType.Electron
   const headerCells = [
@@ -29,16 +31,17 @@ export const getWorkersVirtualDom = (
   ]
   const headerRow = { childCount: showMemory ? 2 : 1, className: 'WorkersViewTableHeaderRow', role: AriaRoles.Row, type: VirtualDomElements.Tr }
   const columns = (showMemory ? headerCells : headerCells.slice(0, 1)).flat()
-  const rows = workers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, worker.id === selectedWorkerId, hasFocus))
+  const visibleWorkers = GetVisibleWorkers.getVisibleWorkers(workers, collapsedWorkerIds)
+  const rows = visibleWorkers.flatMap((worker) => GetWorkerRow.getWorkerRow(worker, showMemory, worker.id === selectedWorkerId, hasFocus))
   const table = {
     ariaLabel: WorkersViewStrings.workers(),
-    childCount: workers.length + 1,
+    childCount: visibleWorkers.length + 1,
     className: 'WorkersViewTable',
     onBlur: DomEventListenerFunctions.BlurWorkers,
     onClick: DomEventListenerFunctions.TableClick,
     onContextMenu: DomEventListenerFunctions.ShowWorkerContextMenu,
     onFocus: DomEventListenerFunctions.FocusWorkers,
-    role: AriaRoles.Table,
+    role: AriaRoles.TreeGrid,
     tabIndex: TabIndex.Focusable,
     type: VirtualDomElements.Table,
   }

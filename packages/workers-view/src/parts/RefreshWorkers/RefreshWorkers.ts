@@ -19,12 +19,14 @@ export const refresh = async (state: WorkersState): Promise<WorkersState> => {
   const latestState = WorkersStates.get(uid)?.newState || state
   const { selectedWorkerId, sortColumn, sortDirection } = latestState
   const selectedWorkerExists = refreshedState.workers.some((worker) => worker.id === selectedWorkerId)
+  const workerIds = new Set(refreshedState.workers.map((worker) => worker.id))
   let nextSelectedWorkerId = selectedWorkerId
   if (!selectedWorkerExists && selectedWorkerId) {
     nextSelectedWorkerId = refreshedState.workers[0]?.id
   }
   return {
     ...refreshedState,
+    collapsedWorkerIds: (latestState.collapsedWorkerIds || []).filter((id) => workerIds.has(id)),
     hasFocus: latestState.hasFocus,
     selectedWorkerId: nextSelectedWorkerId,
     sortColumn,
