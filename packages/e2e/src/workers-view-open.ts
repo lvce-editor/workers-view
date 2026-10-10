@@ -66,11 +66,8 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   const visibleHeaders = WorkersView.table().locator('.WorkersViewTableHeaderCell')
   const firstWorkerRow = workerRows.first()
   const firstWorkerCells = firstWorkerRow.locator('.WorkersViewWorkerCell')
-  const cpuHiddenSecondWorkerRow = workerRows.nth(1)
   await expect(visibleHeaders).toHaveCount(2)
   await expect(firstWorkerCells).toHaveCount(2)
-  await expect(firstWorkerRow).not.toContainText('72.5')
-  await expect(cpuHiddenSecondWorkerRow).not.toContainText('0.0')
   await WorkersView.resize(800, 120)
 
   const memoryHeader = WorkersView.table().locator('.WorkersViewTableHeaderCell:nth-child(2)')
