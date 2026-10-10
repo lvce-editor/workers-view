@@ -41,6 +41,8 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
     error: new Error('Freeze Workers tree-grid e2e state'),
     loaded: true,
     selectedWorkerId: 'workers-tree-grid-renderer',
+    sortColumn: undefined,
+    sortDirection: undefined,
     uid: component.uid,
     workers,
   })
@@ -54,6 +56,7 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   await expect(Locator(':focus')).toHaveAttribute('class', 'WorkersViewTable')
   await expect(row('workers-tree-grid-renderer')).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowDown')
+  await expect(row('workers-tree-grid-panel')).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowDown')
   await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-selected', 'true')
   await KeyBoard.press('ArrowRight')
