@@ -41,8 +41,8 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
     error: new Error('Freeze Workers tree-grid e2e state'),
     loaded: true,
     selectedWorkerId: 'workers-tree-grid-renderer',
-    sortColumn: undefined,
-    sortDirection: undefined,
+    sortColumn: 'name',
+    sortDirection: 'descending',
     uid: component.uid,
     workers,
   })
