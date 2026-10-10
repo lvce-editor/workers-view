@@ -11,7 +11,7 @@ export const test: Test = async ({ Command, expect, Locator, Main, QuickPick }) 
 
   await openWorkers()
   const workersView = Locator('.WorkersView')
-  const workersTable = workersView.locator('[role="table"][aria-label="Workers"]')
+  const workersTable = workersView.locator('.WorkersViewTable')
   await expect(workersTable).toBeVisible()
 
   for (let i = 0; i < 2; i++) {
