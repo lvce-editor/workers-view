@@ -8,6 +8,8 @@ test('registers navigation keys for the Workers focus context', () => {
   expect(getKeyBindings()).toEqual([
     { command: 'Workers.focusNext', key: KeyCode.DownArrow, when: WhenExpression.FocusWorkers },
     { command: 'Workers.focusPrevious', key: KeyCode.UpArrow, when: WhenExpression.FocusWorkers },
+    { command: 'Workers.focusParentOrCollapse', key: KeyCode.LeftArrow, when: WhenExpression.FocusWorkers },
+    { command: 'Workers.focusChildOrExpand', key: KeyCode.RightArrow, when: WhenExpression.FocusWorkers },
     { command: 'Workers.focusFirst', key: KeyCode.Home, when: WhenExpression.FocusWorkers },
     { command: 'Workers.focusLast', key: KeyCode.End, when: WhenExpression.FocusWorkers },
   ])

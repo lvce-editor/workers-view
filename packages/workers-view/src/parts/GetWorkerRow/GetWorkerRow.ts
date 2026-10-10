@@ -1,5 +1,5 @@
-import { VirtualDomElements, type VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
-import type { DisplayedWorker } from '../WorkersState/WorkersState.ts'
+import { mergeClassNames, VirtualDomElements, type VirtualDomNode } from '@lvce-editor/virtual-dom-worker'
+import type { DisplayedWorker, VisibleWorker } from '../WorkersState/WorkersState.ts'
 import * as AriaRoles from '../AriaRoles/AriaRoles.ts'
 import * as DomEventListenerFunctions from '../DomEventListenerFunctions/DomEventListenerFunctions.ts'
 import * as FormatMemoryRate from '../FormatMemoryRate/FormatMemoryRate.ts'
@@ -47,19 +47,42 @@ const getMemoryCell = (worker: DisplayedWorker): VirtualDomNode[] => {
   ]
 }
 
-export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selected: boolean, hasFocus: boolean): readonly VirtualDomNode[] => {
-  let className = 'WorkersViewWorkerRow'
-  if (selected) {
-    className += ' WorkersViewWorkerRowSelected'
-    className += hasFocus ? ' WorkersViewWorkerRowFocused' : ' WorkersViewWorkerRowBlurred'
-  }
+const getDisclosureButton = (worker: VisibleWorker): readonly VirtualDomNode[] => {
+  if (!worker.hasChildren) return []
+  return [
+    {
+      ariaLabel: worker.expanded ? WorkersViewStrings.collapseWorker() : WorkersViewStrings.expandWorker(),
+      className: 'WorkersViewDisclosure',
+      'data-workerId': worker.id,
+      onClick: DomEventListenerFunctions.ToggleWorker,
+      textContent: worker.expanded ? '▾' : '▸',
+      type: VirtualDomElements.Button,
+    },
+  ]
+}
+
+const getRowClassName = (selected: boolean, hasFocus: boolean): string => {
+  if (!selected) return 'WorkersViewWorkerRow'
+  const focusClassName = hasFocus ? 'WorkersViewWorkerRowFocused' : 'WorkersViewWorkerRowBlurred'
+  return mergeClassNames('WorkersViewWorkerRow', 'WorkersViewWorkerRowSelected', focusClassName)
+}
+
+export const getWorkerRow = (worker: VisibleWorker, showMemory: boolean, selected: boolean, hasFocus: boolean): readonly VirtualDomNode[] => {
+  const className = getRowClassName(selected, hasFocus)
   const cells: VirtualDomNode[] = [
     {
-      className: 'WorkersViewWorkerCell',
+      childCount: worker.hasChildren ? 2 : 1,
+      className: mergeClassNames('WorkersViewWorkerCell', 'WorkersViewNameCell', `WorkersViewIndent-${worker.depth}`),
       'data-contextMenuWorkerId': worker.id,
       role: AriaRoles.Cell,
-      textContent: worker.name,
       type: VirtualDomElements.Td,
+    },
+    ...getDisclosureButton(worker),
+    {
+      className: 'WorkersViewWorkerName',
+      'data-contextMenuWorkerId': worker.id,
+      textContent: worker.name,
+      type: VirtualDomElements.Span,
     },
   ]
   if (showMemory) {
@@ -68,7 +91,9 @@ export const getWorkerRow = (worker: DisplayedWorker, showMemory: boolean, selec
   return [
     {
       'aria-selected': selected,
+      ariaExpanded: worker.hasChildren ? worker.expanded : undefined,
       ariaLabel: worker.name,
+      ariaLevel: worker.depth,
       childCount: showMemory ? 2 : 1,
       className,
       'data-contextMenuWorkerId': worker.id,

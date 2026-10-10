@@ -228,6 +228,21 @@ test('refresh preserves the selected worker by stable id', async () => {
   })
 })
 
+test('refresh preserves collapse state for workers that remain active', async () => {
+  const workers = [
+    { id: 'renderer', name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+    { id: 'extension-management', name: 'Extension Management Worker', parentId: 'renderer', runtimeName: 'Extension Management Worker' },
+  ]
+  RendererProcess.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => workers } }))
+  create()
+  await commandMap['Workers.setComponentState'](uid, {
+    ...WorkersStates.get(uid).newState,
+    collapsedWorkerIds: ['renderer', 'removed-worker'],
+  })
+  await commandMap['Workers.refresh'](uid)
+  expect(WorkersStates.get(uid).newState.collapsedWorkerIds).toEqual(['renderer'])
+})
+
 test('refresh falls back to the first remaining worker when selection disappears', async () => {
   RendererProcess.set(createMockRpc({ commandMap: { 'Workers.getWorkers': () => [{ id: 'worker-a', name: 'Alpha', runtimeName: 'Alpha' }] } }))
   create()
@@ -272,6 +287,12 @@ test('registers the sort event handlers without a refresh button handler', () =>
     {
       name: 12,
       params: ['selectWorker', 'event.currentTarget.dataset.workerId'],
+      preventDefault: true,
+      stopPropagation: true,
+    },
+    {
+      name: 14,
+      params: ['toggleWorker', 'event.currentTarget.dataset.workerId'],
       preventDefault: true,
       stopPropagation: true,
     },

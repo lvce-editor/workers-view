@@ -1,6 +1,7 @@
+// cspell:ignore treegrid
 export const Alert = 'alert'
 export const Cell = 'cell'
 export const ColumnHeader = 'columnheader'
 export const Row = 'row'
 export const Status = 'status'
-export const Table = 'table'
+export const TreeGrid = 'treegrid'

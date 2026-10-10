@@ -1,5 +1,6 @@
 import { PlatformType } from '@lvce-editor/constants'
 import type { WorkersState } from '../WorkersState/WorkersState.ts'
+import * as GetVisibleWorkers from '../GetVisibleWorkers/GetVisibleWorkers.ts'
 import * as SelectWorker from '../SelectWorker/SelectWorker.ts'
 import * as SortByMemory from '../SortByMemory/SortByMemory.ts'
 import * as SortByName from '../SortByName/SortByName.ts'
@@ -9,7 +10,7 @@ const HeaderHeight = 23
 const RowHeight = 22
 
 export const handleTableClick = (state: WorkersState, clientX: number, clientY: number, tableWidth: number): WorkersState => {
-  const { error, platform, scrollTop, workers, x, y } = state
+  const { collapsedWorkerIds, error, platform, scrollTop, workers, x, y } = state
   const relativeX = clientX - x
   if (tableWidth <= 0 || relativeX < 0 || relativeX >= tableWidth) {
     return state
@@ -26,7 +27,7 @@ export const handleTableClick = (state: WorkersState, clientX: number, clientY: 
     return SortByMemory.sortByMemory(state)
   }
   const rowIndex = Math.floor((relativeY + scrollTop - tableTop - HeaderHeight) / RowHeight)
-  const worker = workers[rowIndex]
+  const worker = GetVisibleWorkers.getVisibleWorkers(workers, collapsedWorkerIds || [])[rowIndex]
   if (!worker) {
     return state
   }

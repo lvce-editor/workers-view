@@ -38,4 +38,10 @@ export const renderEventListeners = (): readonly any[] => [
     preventDefault: true,
     stopPropagation: true,
   },
+  {
+    name: DomEventListenerFunctions.ToggleWorker,
+    params: ['toggleWorker', 'event.currentTarget.dataset.workerId'],
+    preventDefault: true,
+    stopPropagation: true,
+  },
 ]

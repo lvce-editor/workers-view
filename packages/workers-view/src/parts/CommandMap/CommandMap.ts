@@ -26,6 +26,7 @@ import * as SortByName from '../SortByName/SortByName.ts'
 import * as SortHeaderByKeyboard from '../SortHeaderByKeyboard/SortHeaderByKeyboard.ts'
 import * as TakeHeapSnapshot from '../TakeHeapSnapshot/TakeHeapSnapshot.ts'
 import * as TerminateWorker from '../TerminateWorker/TerminateWorker.ts'
+import * as ToggleWorker from '../ToggleWorker/ToggleWorker.ts'
 import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
 const handleDirectMessagePort = (port: MessagePort, setAsRendererProcess?: boolean): Promise<void> =>
@@ -36,9 +37,11 @@ export const commandMap = {
   'Workers.create': Create.create,
   'Workers.diff2': Diff2.diff2,
   'Workers.dispose': Dispose.dispose,
+  'Workers.focusChildOrExpand': WorkersStates.wrapCommand(NavigateWorkers.focusChildOrExpand),
   'Workers.focusFirst': WorkersStates.wrapCommand(NavigateWorkers.focusFirst),
   'Workers.focusLast': WorkersStates.wrapCommand(NavigateWorkers.focusLast),
   'Workers.focusNext': WorkersStates.wrapCommand(NavigateWorkers.focusNext),
+  'Workers.focusParentOrCollapse': WorkersStates.wrapCommand(NavigateWorkers.focusParentOrCollapse),
   'Workers.focusPrevious': WorkersStates.wrapCommand(NavigateWorkers.focusPrevious),
   'Workers.focusWorkers': WorkersStates.wrapCommand(FocusWorkers.focusWorkers),
   'Workers.getCommandIds': WorkersStates.getCommandIds,
@@ -64,4 +67,5 @@ export const commandMap = {
   'Workers.sortHeaderByKeyboard': WorkersStates.wrapCommand(SortHeaderByKeyboard.sortHeaderByKeyboard),
   'Workers.takeHeapSnapshot': WorkersStates.wrapCommand(TakeHeapSnapshot.takeHeapSnapshot),
   'Workers.terminateWorker': WorkersStates.wrapCommand(TerminateWorker.terminateWorker),
+  'Workers.toggleWorker': WorkersStates.wrapCommand(ToggleWorker.toggleWorker),
 }

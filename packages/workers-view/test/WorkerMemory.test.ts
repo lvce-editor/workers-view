@@ -59,6 +59,18 @@ test('caches names and sessions while batching each refresh over one dedicated p
   expect(getHeapUsages.mock.calls).toEqual(Array.from({ length: 3 }, () => [['session-a', 'session-b']]))
 })
 
+test('does not duplicate session order when attachment returns the same target twice', async () => {
+  const { attach, getHeapUsages } = fixture()
+  attach.mockResolvedValueOnce([
+    { runtimeName: 'First Worker', sessionId: 'session-first', targetId: 'a' },
+    { runtimeName: 'Latest Worker', sessionId: 'session-latest', targetId: 'a' },
+  ])
+  expect(await WorkerMemory.getMemoryUsages(7)).toEqual({
+    'Latest Worker': { cpu: null, usedSize: 1024 },
+  })
+  expect(getHeapUsages).toHaveBeenCalledWith(['session-latest'])
+})
+
 test('discovers added workers and releases removed workers without reevaluating survivors', async () => {
   const { attach, detach, getTargets } = fixture()
   await WorkerMemory.getMemoryUsages(7)
