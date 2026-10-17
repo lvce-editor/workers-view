@@ -21,18 +21,6 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   const state = (await Command.execute('Workers.getComponentState', component.uid)) as Record<string, unknown>
   const workers = [
     { id: 'workers-tree-grid-renderer', name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
-    {
-      id: 'workers-tree-grid-editor',
-      name: 'Editor Worker',
-      parentId: 'workers-tree-grid-renderer',
-      runtimeName: 'Editor Worker',
-    },
-    {
-      id: 'workers-tree-grid-syntax-highlighting',
-      name: 'Syntax Highlighting Worker',
-      parentId: 'workers-tree-grid-editor',
-      runtimeName: 'Syntax Highlighting Worker',
-    },
     { id: 'workers-tree-grid-panel', name: 'Panel Worker', parentId: 'workers-tree-grid-renderer', runtimeName: 'Panel Worker' },
     {
       id: 'workers-tree-grid-extension-management',
@@ -47,16 +35,28 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
       runtimeName: 'ESLint Worker',
     },
     {
+      id: 'workers-tree-grid-eslint-module-resolution',
+      name: 'ESLint Module Resolution Worker',
+      parentId: 'workers-tree-grid-extension-management',
+      runtimeName: 'ESLint Module Resolution Worker',
+    },
+    {
       id: 'workers-tree-grid-eslint-evaluation',
       name: 'ESLint Evaluation Worker',
       parentId: 'workers-tree-grid-extension-management',
       runtimeName: 'ESLint Evaluation Worker',
     },
     {
-      id: 'workers-tree-grid-eslint-module-resolution',
-      name: 'ESLint Module Resolution Worker',
-      parentId: 'workers-tree-grid-extension-management',
-      runtimeName: 'ESLint Module Resolution Worker',
+      id: 'workers-tree-grid-editor',
+      name: 'Editor Worker',
+      parentId: 'workers-tree-grid-renderer',
+      runtimeName: 'Editor Worker',
+    },
+    {
+      id: 'workers-tree-grid-syntax-highlighting',
+      name: 'Syntax Highlighting Worker',
+      parentId: 'workers-tree-grid-editor',
+      runtimeName: 'Syntax Highlighting Worker',
     },
   ]
   await Command.execute('Workers.setComponentState', {
