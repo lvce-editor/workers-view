@@ -21,6 +21,18 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
   const state = (await Command.execute('Workers.getComponentState', component.uid)) as Record<string, unknown>
   const workers = [
     { id: 'workers-tree-grid-renderer', name: 'Renderer Worker', runtimeName: 'Renderer Worker' },
+    {
+      id: 'workers-tree-grid-editor',
+      name: 'Editor Worker',
+      parentId: 'workers-tree-grid-renderer',
+      runtimeName: 'Editor Worker',
+    },
+    {
+      id: 'workers-tree-grid-syntax-highlighting',
+      name: 'Syntax Highlighting Worker',
+      parentId: 'workers-tree-grid-editor',
+      runtimeName: 'Syntax Highlighting Worker',
+    },
     { id: 'workers-tree-grid-panel', name: 'Panel Worker', parentId: 'workers-tree-grid-renderer', runtimeName: 'Panel Worker' },
     {
       id: 'workers-tree-grid-extension-management',
@@ -33,6 +45,18 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
       name: 'ESLint Worker',
       parentId: 'workers-tree-grid-extension-management',
       runtimeName: 'ESLint Worker',
+    },
+    {
+      id: 'workers-tree-grid-eslint-evaluation',
+      name: 'ESLint Evaluation Worker',
+      parentId: 'workers-tree-grid-extension-management',
+      runtimeName: 'ESLint Evaluation Worker',
+    },
+    {
+      id: 'workers-tree-grid-eslint-module-resolution',
+      name: 'ESLint Module Resolution Worker',
+      parentId: 'workers-tree-grid-extension-management',
+      runtimeName: 'ESLint Module Resolution Worker',
     },
   ]
   await Command.execute('Workers.setComponentState', {
@@ -49,8 +73,13 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
 
   const row = (id: string): ReturnType<typeof table.locator> => table.locator(`.WorkersViewWorkerRow[data-worker-id="${id}"]`)
   await expect(row('workers-tree-grid-renderer')).toHaveAttribute('aria-level', '1')
+  await expect(row('workers-tree-grid-editor')).toHaveAttribute('aria-level', '2')
+  await expect(row('workers-tree-grid-syntax-highlighting')).toHaveAttribute('aria-level', '3')
+  await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-level', '2')
   await expect(row('workers-tree-grid-panel')).toHaveAttribute('aria-level', '2')
   await expect(row('workers-tree-grid-eslint')).toHaveAttribute('aria-level', '3')
+  await expect(row('workers-tree-grid-eslint-evaluation')).toHaveAttribute('aria-level', '3')
+  await expect(row('workers-tree-grid-eslint-module-resolution')).toHaveAttribute('aria-level', '3')
 
   await Command.execute('Viewlet.focusSelector', component.uid, '.WorkersViewTable')
   await expect(Locator(':focus')).toHaveAttribute('class', 'WorkersViewTable')
@@ -69,6 +98,10 @@ export const test: Test = async ({ Command, expect, KeyBoard, Locator, QuickPick
 
   await KeyBoard.press('ArrowLeft')
   await expect(row('workers-tree-grid-eslint')).toBeHidden()
+  await expect(row('workers-tree-grid-eslint-evaluation')).toBeHidden()
+  await expect(row('workers-tree-grid-eslint-module-resolution')).toBeHidden()
+  await expect(row('workers-tree-grid-editor')).toBeVisible()
+  await expect(row('workers-tree-grid-syntax-highlighting')).toBeVisible()
   await expect(row('workers-tree-grid-extension-management')).toHaveAttribute('aria-expanded', 'false')
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- Exercise the real disclosure control.
   await row('workers-tree-grid-extension-management').locator('.WorkersViewDisclosure').click()

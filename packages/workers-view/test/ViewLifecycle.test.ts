@@ -32,8 +32,8 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
     platform: PlatformType.Web,
     scrollTop: 0,
     selectedWorkerId: undefined,
-    sortColumn: undefined,
-    sortDirection: undefined,
+    sortColumn: 'name',
+    sortDirection: 'ascending',
     uid,
     width: 200,
     workers: [],
@@ -43,7 +43,7 @@ test('creates an unloaded view and renders its initial DOM and dimensions', () =
   const diff = commandMap['Workers.diff2'](uid)
   expect(diff).toEqual([DiffType.RenderDom, DiffType.RenderCss])
   expect(commandMap['Workers.render2'](uid, diff)).toEqual([
-    [ViewletCommand.SetDom2, uid, GetWorkersVirtualDom.getWorkersVirtualDom([], false, PlatformType.Web)],
+    [ViewletCommand.SetDom2, uid, GetWorkersVirtualDom.getWorkersVirtualDom([], false, PlatformType.Web, undefined, 'name', 'ascending')],
     [ViewletCommand.SetCss, uid, 'width:200px;height:100px;overflow:hidden;'],
   ])
 })
@@ -204,7 +204,25 @@ test('refresh preserves a sort selection made while worker data is loading', asy
   await refreshPromise
   const { newState } = WorkersStates.get(uid)
   expect(newState.sortColumn).toBe('name')
-  expect(newState.sortDirection).toBe('ascending')
+  expect(newState.sortDirection).toBe('descending')
+  expect(newState.workers.map((worker) => worker.name)).toEqual(['Zulu', 'Alpha'])
+})
+
+test('workers are sorted by name ascending when the view opens and refreshes', async () => {
+  RendererProcess.set(
+    createMockRpc({
+      commandMap: {
+        'Workers.getWorkers': () => [
+          { id: 'z', name: 'Zulu', runtimeName: 'Zulu' },
+          { id: 'a', name: 'Alpha', runtimeName: 'Alpha' },
+        ],
+      },
+    }),
+  )
+  create()
+  await commandMap['Workers.refresh'](uid)
+  const { newState } = WorkersStates.get(uid)
+  expect(newState).toMatchObject({ sortColumn: 'name', sortDirection: 'ascending' })
   expect(newState.workers.map((worker) => worker.name)).toEqual(['Alpha', 'Zulu'])
 })
 
