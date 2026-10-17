@@ -19,21 +19,21 @@ export const test: Test = async ({ Command, expect, KeyBoard, Main, WorkersView 
   }
   const tableInContainer = view.locator('.WorkersViewTableContainer > .WorkersViewTable')
   await expect(tableInContainer).toHaveCount(1)
-  await expect(nameHeader).toHaveAttribute('aria-sort', 'none')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
   await expect(WorkersView.nameHeaderButton()).toHaveText('Name')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify the real Name header control toggles sorting.
   await WorkersView.nameHeaderButton().click()
-  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
   // eslint-disable-next-line e2e/no-direct-click, @typescript-eslint/no-deprecated -- Verify a repeated real header click reverses the sort.
   await WorkersView.nameHeaderButton().click()
-  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
   await Command.execute('Viewlet.focusSelector', workersComponent.uid, '.WorkersViewTableHeaderButton')
   await KeyBoard.press('Enter')
-  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
   await KeyBoard.press('Space')
-  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
   await WorkersView.refresh()
-  await expect(nameHeader).toHaveAttribute('aria-sort', 'descending')
+  await expect(nameHeader).toHaveAttribute('aria-sort', 'ascending')
 
   const workers = Array.from({ length: 40 }, (_, index) => ({
     cpu: [72.5, 0][index] ?? null,
