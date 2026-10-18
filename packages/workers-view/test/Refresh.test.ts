@@ -47,7 +47,9 @@ test('returns names without requesting measurements on web', async () => {
 test('groups known meta and view workers under display-only zero-memory rows', async () => {
   const sourceControl = { id: 'sourceControl', name: 'Source Control Worker', runtimeName: 'Source Control Worker' }
   const panel = { id: 'panel', name: 'Panel Worker', runtimeName: 'Panel Worker' }
-  getWorkers.mockResolvedValue([worker, sourceControl, panel])
+  const about = { id: 'aboutWorker', name: 'About View Worker', runtimeName: 'About View Worker' }
+  const explorer = { id: 'explorer', name: 'Explorer Worker', runtimeName: 'Explorer Worker' }
+  getWorkers.mockResolvedValue([worker, sourceControl, panel, about, explorer])
 
   const result = await refresh(state, services)
 
@@ -57,6 +59,8 @@ test('groups known meta and view workers under display-only zero-memory rows', a
     { ...sourceControl, cpu: null, memory: null, parentId: 'zygote-meta' },
     { id: 'zygote-views', memory: 0, name: 'View Workers', runtimeName: '', synthetic: true },
     { ...panel, cpu: null, memory: null, parentId: 'zygote-views' },
+    { ...about, cpu: null, memory: null, parentId: 'zygote-views' },
+    { ...explorer, cpu: null, memory: null, parentId: 'zygote-views' },
   ])
 })
 

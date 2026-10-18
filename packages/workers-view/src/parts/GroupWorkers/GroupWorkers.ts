@@ -1,7 +1,38 @@
 import type { DisplayedWorker } from '../WorkersState/WorkersState.ts'
 
 const metaWorkerIds = new Set(['fileSystemWorker', 'cacheWorker', 'textMeasurementWorker', 'sourceControl'])
-const viewWorkerIds = new Set(['activityBar', 'mainArea', 'panel', 'workersView', 'aboutView'])
+// Viewlet worker IDs from the renderer-worker catalogue, excluding extension-specific views.
+const viewWorkerIds = new Set([
+  'componentState',
+  'notificationCenterView',
+  'cookieImportView',
+  'accountsView',
+  'aboutWorker',
+  'activityBar',
+  'textSearchView',
+  'chatDebug',
+  'chatView',
+  'dialogWorker',
+  'diffView',
+  'explorer',
+  'iframeInspector',
+  'keyBindings',
+  'languageModels',
+  'mainArea',
+  'output',
+  'panel',
+  'preview',
+  'portsView',
+  'problemsViewWorker',
+  'fileWatcherView',
+  'processExplorer',
+  'quickPickWorker',
+  'workersView',
+  'secretsView',
+  'settingsView',
+  'statusBar',
+  'titleBar',
+])
 
 const makeGroup = (id: string, name: string): DisplayedWorker => ({
   id,
