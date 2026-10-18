@@ -11,7 +11,7 @@ export const getMenuEntriesForUid = (uid: number, args: { readonly workerId: str
 
 export const getMenuEntries = (state: WorkersState, workerId: string): readonly MenuEntry[] => {
   const { platform, workers } = state
-  if (workers.every((worker) => worker.id !== workerId)) return []
+  if (workers.every((worker) => worker.id !== workerId || worker.synthetic)) return []
   const entries: MenuEntry[] = [
     {
       args: [workerId],

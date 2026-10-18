@@ -6,7 +6,7 @@ import type { WorkersState } from '../WorkersState/WorkersState.ts'
 export const takeHeapSnapshot = async (state: WorkersState, workerId: string): Promise<WorkersState> => {
   const { platform, workers } = state
   const worker = workers.find((item) => item.id === workerId)
-  if (!worker || platform !== PlatformType.Electron) return state
+  if (!worker || worker.synthetic || platform !== PlatformType.Electron) return state
   const windowId = await RendererWorker.getWindowId()
   const rpc = await LazyTransferMessagePortRpcParent.create({
     commandMap: {},

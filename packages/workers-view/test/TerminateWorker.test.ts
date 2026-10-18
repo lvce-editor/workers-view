@@ -42,3 +42,9 @@ test('ignores a stale worker id without invoking the registry', async () => {
   expect(terminate).not.toHaveBeenCalled()
   expect(result).toBe(state)
 })
+
+test('ignores synthetic group rows', async () => {
+  const result = await terminateWorker({ ...state, workers: [{ ...worker, synthetic: true }] }, worker.id)
+  expect(terminate).not.toHaveBeenCalled()
+  expect(result).toMatchObject({ workers: [{ synthetic: true }] })
+})

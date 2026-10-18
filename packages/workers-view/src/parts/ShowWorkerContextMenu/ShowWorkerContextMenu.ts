@@ -5,7 +5,7 @@ import * as WorkersStates from '../WorkersStates/WorkersStates.ts'
 
 export const showWorkerContextMenu = async (state: WorkersState, workerId: string, x: number, y: number): Promise<WorkersState> => {
   const { uid, workers } = state
-  if (workers.every((worker) => worker.id !== workerId)) return state
+  if (workers.every((worker) => worker.id !== workerId || worker.synthetic)) return state
   const newState = {
     ...state,
     hasFocus: true,

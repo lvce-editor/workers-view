@@ -11,9 +11,9 @@ const getMemoryCell = (worker: DisplayedWorker): VirtualDomNode[] => {
     return [
       {
         className: 'WorkersViewWorkerCell',
-        'data-contextMenuWorkerId': worker.id,
+        ...(!worker.synthetic && { 'data-contextMenuWorkerId': worker.id }),
         role: AriaRoles.Cell,
-        textContent: GetMemoryText.getMemoryText(worker.memory),
+        textContent: GetMemoryText.getMemoryText(worker.memory, worker.synthetic),
         type: VirtualDomElements.Td,
       },
     ]
@@ -23,14 +23,14 @@ const getMemoryCell = (worker: DisplayedWorker): VirtualDomNode[] => {
   const memoryChildren: VirtualDomNode[] = [
     {
       className: 'WorkersViewMemory',
-      'data-contextMenuWorkerId': worker.id,
-      textContent: GetMemoryText.getMemoryText(worker.memory),
+      ...(!worker.synthetic && { 'data-contextMenuWorkerId': worker.id }),
+      textContent: GetMemoryText.getMemoryText(worker.memory, worker.synthetic),
       type: VirtualDomElements.Span,
     },
     {
       ariaLabel: growing ? WorkersViewStrings.memoryGrowing(rate) : WorkersViewStrings.memoryShrinking(rate),
       className: growing ? 'WorkersViewMemoryTrend WorkersViewMemoryTrendGrowing' : 'WorkersViewMemoryTrend WorkersViewMemoryTrendShrinking',
-      'data-contextMenuWorkerId': worker.id,
+      ...(!worker.synthetic && { 'data-contextMenuWorkerId': worker.id }),
       textContent: `${growing ? '↑' : '↓'} ${rate}`,
       type: VirtualDomElements.Span,
     },
@@ -39,7 +39,7 @@ const getMemoryCell = (worker: DisplayedWorker): VirtualDomNode[] => {
     {
       childCount: memoryChildren.length,
       className: 'WorkersViewWorkerCell',
-      'data-contextMenuWorkerId': worker.id,
+      ...(!worker.synthetic && { 'data-contextMenuWorkerId': worker.id }),
       role: AriaRoles.Cell,
       type: VirtualDomElements.Td,
     },
@@ -73,7 +73,7 @@ export const getWorkerRow = (worker: VisibleWorker, showMemory: boolean, selecte
     {
       childCount: worker.hasChildren ? 2 : 1,
       className: mergeClassNames('WorkersViewWorkerCell', 'WorkersViewNameCell', `WorkersViewIndent-${worker.depth}`),
-      'data-contextMenuWorkerId': worker.id,
+      ...(!worker.synthetic && { 'data-contextMenuWorkerId': worker.id }),
       role: AriaRoles.Cell,
       type: VirtualDomElements.Td,
     },

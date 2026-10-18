@@ -54,6 +54,7 @@ const staleState: WorkersState = { ...state, workers: [] }
 
 test.each<[string, Readonly<WorkersState>, string]>([
   ['stale worker', staleState, worker.id],
+  ['synthetic worker', { ...state, workers: [{ ...worker, synthetic: true }] }, worker.id],
   ['unsupported platform', unsupportedState, worker.id],
 ])('does not start a snapshot for a %s', async (_name, currentState, workerId) => {
   await expect(takeHeapSnapshot(currentState, workerId)).resolves.toBe(currentState)

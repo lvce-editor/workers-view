@@ -12,6 +12,7 @@ export interface DisplayedWorker extends TrackedWorker {
     readonly direction: 'growing' | 'shrinking'
     readonly bytesPerSecond: number
   }
+  readonly synthetic?: boolean
 }
 
 export interface VisibleWorker extends DisplayedWorker {
