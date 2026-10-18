@@ -1,6 +1,7 @@
 import { PlatformType } from '@lvce-editor/constants'
 import type { MemorySample, TrackedWorker, WorkersState } from '../WorkersState/WorkersState.ts'
 import * as GetMemoryTrend from '../GetMemoryTrend/GetMemoryTrend.ts'
+import * as GroupWorkers from '../GroupWorkers/GroupWorkers.ts'
 import * as SortWorkers from '../SortWorkers/SortWorkers.ts'
 import * as ToError from '../ToError/ToError.ts'
 
@@ -80,6 +81,6 @@ export const refresh = async (state: WorkersState, services: RefreshServices): P
     error: undefined,
     loaded: true,
     memorySamples,
-    workers: SortWorkers.sortWorkers(displayedWorkers, sortColumn, sortDirection),
+    workers: SortWorkers.sortWorkers(GroupWorkers.groupWorkers(displayedWorkers), sortColumn, sortDirection),
   }
 }

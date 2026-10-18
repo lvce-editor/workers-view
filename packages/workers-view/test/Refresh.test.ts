@@ -44,6 +44,26 @@ test('returns names without requesting measurements on web', async () => {
   expect(getMemoryUsages).not.toHaveBeenCalled()
 })
 
+test('groups known meta and view workers under display-only zero-memory rows', async () => {
+  const sourceControl = { id: 'sourceControl', name: 'Source Control Worker', runtimeName: 'Source Control Worker' }
+  const panel = { id: 'panel', name: 'Panel Worker', runtimeName: 'Panel Worker' }
+  const about = { id: 'aboutWorker', name: 'About View Worker', runtimeName: 'About View Worker' }
+  const explorer = { id: 'explorer', name: 'Explorer Worker', runtimeName: 'Explorer Worker' }
+  getWorkers.mockResolvedValue([worker, sourceControl, panel, about, explorer])
+
+  const result = await refresh(state, services)
+
+  expect(result.workers).toEqual([
+    { ...worker, cpu: null, memory: null },
+    { id: 'zygote-meta', memory: 0, name: 'Meta Workers', runtimeName: '', synthetic: true },
+    { ...sourceControl, cpu: null, memory: null, parentId: 'zygote-meta' },
+    { id: 'zygote-views', memory: 0, name: 'View Workers', runtimeName: '', synthetic: true },
+    { ...panel, cpu: null, memory: null, parentId: 'zygote-views' },
+    { ...about, cpu: null, memory: null, parentId: 'zygote-views' },
+    { ...explorer, cpu: null, memory: null, parentId: 'zygote-views' },
+  ])
+})
+
 test('keeps current workers without CPU data when listing fails', async () => {
   getWorkers.mockRejectedValue(new Error('worker list unavailable'))
   const result = await refresh({ ...state, workers: [{ ...worker, cpu: 5, memory: 12 }] }, services)
